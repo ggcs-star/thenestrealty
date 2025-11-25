@@ -1,0 +1,129 @@
+/* Header Section */
+.content-header {
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+}
+
+.breadcrumbs {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+    font-size: 14px;
+    color: #007bff;
+}
+
+.breadcrumbs a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+.breadcrumbs li {
+    display: flex;
+    align-items: center;
+    color: #555;
+}
+
+.breadcrumbs li.active {
+    font-weight: bold;
+}
+
+/* Dashboard Cards */
+.dashboard-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.dashboard-card {
+    width: 15%;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+}
+
+.dashboard-card a {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Card Colors */
+.bg-online-orders { background-color: rgb(177, 163, 44); }
+.bg-total-customer { background-color: rgb(50, 201, 82); }
+.bg-total-manufacturer { background-color: #6f42c1; }
+.bg-total-product { background-color: #006400; }
+.bg-stockout { background-color: #ff8c00; }
+.bg-expired { background-color: #ff0000; }
+
+/* Alert Messages */
+.alert-message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+}
+
+.alert-info {
+    background-color: #d9edf7;
+    color: #31708f;
+    border-color: #bce8f1;
+}
+
+.alert-error {
+    background-color: #f2dede;
+    color: #a94442;
+    border-color: #ebccd1;
+}
+
+.alert-close {
+    float: right;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* Charts */
+.chart-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.chart-box {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.chart-box.large {
+    width: 65%;
+}
+
+.chart-box.small {
+    width: 30%;
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table caption {
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.table th, .table td {
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 5px;
+}
