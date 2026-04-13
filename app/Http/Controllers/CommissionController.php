@@ -26,8 +26,11 @@ class CommissionController extends Controller
 
 public function create(Request $request): \Illuminate\View\View
 {
-    $booking = session('booking'); // From flash
-    return view('commission.create', compact('booking'));
+    $booking = session('booking');
+
+    $bookings = \App\Models\Booking::select('id', 'booking_id')->get();
+
+    return view('commission.create', compact('booking', 'bookings'));
 }
 
 public function fetch(Request $request): \Illuminate\Http\RedirectResponse
