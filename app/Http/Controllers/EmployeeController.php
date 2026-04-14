@@ -10,12 +10,34 @@ use Illuminate\View\View;
 
 class EmployeeController extends Controller
 {
-    public function index(): View
-    {
-        $employees = Employee::all();
-        return view('empmanagement.index', compact('employees'));
+    // public function index(): View
+    // {
+    //     $employees = Employee::all();
+    //     return view('empmanagement.index', compact('employees'));
+    // }
+public function index(Request $request): View
+{
+    $query = Employee::query();
+
+    // 🔍 SEARCH
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%')
+              ->orWhere('email', 'like', '%' . $request->search . '%')
+              ->orWhere('phone_number', 'like', '%' . $request->search . '%');
+        });
     }
 
+    // 🎯 STATUS FILTER
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // 📄 PAGINATION (MAIN FIX)
+    $employees = $query->latest()->paginate(10);
+
+    return view('empmanagement.index', compact('employees'));
+}
     public function create(): View
     {
         return view('empmanagement.create');

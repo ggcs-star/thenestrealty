@@ -5,7 +5,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="w-min-screen p-2 mx-auto mt-12 px-4">
+    <div class="px-6 mx-auto mt-10 md:mt-12 max-w-7xl">
         <div class="bg-white shadow-lg rounded-xl p-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Loan Management Form</h2>
 

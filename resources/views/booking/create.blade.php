@@ -5,7 +5,7 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="px-6 py-6 w-full">
+<section class="px-6 mx-auto mt-10 md:mt-12 max-w-7xl">
 <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">            <h2 class="text-2xl font-semibold text-gray-900">Create Booking</h2>
 
             {{-- Display ALL Validation Errors at the top --}}

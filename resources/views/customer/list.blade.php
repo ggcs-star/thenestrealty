@@ -15,8 +15,7 @@
                     <p class="text-sm text-gray-500 mt-1">Manage and view all customer information</p>
                 </div>
                 <a href="{{ route('customers.create') }}" 
-                   class="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+class="inline-flex items-center justify-center gap-2 bg-[#AC7E2C] text-white px-4 py-2 rounded-lg hover:bg-[#8C651F] transition-colors shadow-sm">                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     <span>Add New Customer</span>
@@ -119,8 +118,7 @@
                         </select>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                            Search
+<button type="submit" class="px-4 py-2 bg-[#AC7E2C] text-white rounded-lg hover:bg-[#8C651F] transition-colors">                            Search
                         </button>
                         <a href="{{ route('customers.index') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                             Reset
