@@ -5,59 +5,117 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="w-min-screen mx-auto mt-10">
-    <div class="bg-white p-8 rounded-2xl shadow-md">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Loan Records</h2>
-        
+<section class="px-6 py-6 w-full">
+
+    <!-- HEADER -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-semibold text-gray-900">Loan Records</h2>
+        <p class="text-sm text-gray-500">Manage and track all loan entries</p>
+    </div>
+
+    <!-- CARD -->
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm">
 
         @if($loans->isEmpty())
-            <p class="text-gray-600 text-sm">No loan records found.</p>
-        @else
-            <div class="overflow-x-auto border-1">
-                <table class="min-w-full table-auto text-sm text-gray-800">
-                    <thead class="bg-gray-100 text-xs uppercase text-gray-700">
-                        <tr>
-                            <th class="px-4 py-2 border">#</th>
-                            <th class="px-4 py-2 border">Customer Name</th>
-                            <th class="px-4 py-2 border">Booking ID</th>
-                            <th class="px-4 py-2 border">Unit Name</th>
-                            <th class="px-4 py-2 border">Bank Name</th>
-                            <th class="px-4 py-2 border">Employee Name</th>
-                            <th class="px-4 py-2 border">Loan Amount</th>
-                            <th class="px-4 py-2 border">Loan Stage</th>
-                            <th class="px-4 py-2 border text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white">
-                        @foreach ($loans as $index => $loan)
-                        <tr class="hover:bg-gray-50 transition text-center">
-                            <td class="px-4 py-2 border">{{ $index + 1 }}</td>
-                            <td class="px-4 py-2 border">{{ $loan->customer_name }}</td>
-                           <td class="px-4 py-2 border">{{ $loan->booking_id }}</td>
-                            <td class="px-4 py-2 border">{{ $loan->unit_name }}</td>
-                            <td class="px-4 py-2 border">{{ $loan->bank_name }}</td>
-                            <td class="px-4 py-2 border">{{ $loan->employee_name }}</td>
-                            <td class="px-4 py-2 border text-green-700">{{ amountToPoints($loan->loan_amount) }}</td>
-                            <td class="px-4 py-2 border">
-                                <span class="inline-block px-2 py-1 text-xs rounded-full
-                                    {{ $loan->loan_stage === 'Approved' ? 'bg-green-100 text-green-800' :
-                                       ($loan->loan_stage === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                       'bg-gray-100 text-gray-800') }}">
-                                    {{ $loan->loan_stage }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-2 border text-center">
-                                <a href="#"
-                                   class="inline-block bg-[#AC7E2C] hover:bg-[#8C651F] text-white text-xs font-medium px-3 py-1 rounded transition">
-                                   Edit
-                                </a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="p-8 text-center text-gray-500">
+                No loan records found
             </div>
+        @else
+
+        <!-- TABLE -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+
+                <!-- HEADER -->
+                <thead class="bg-gray-50 text-gray-600">
+                    <tr>
+                        <th class="px-4 py-3 text-left">#</th>
+                        <th class="px-4 py-3 text-left">Customer</th>
+                        <th class="px-4 py-3 text-left">Booking ID</th>
+                        <th class="px-4 py-3 text-left">Unit</th>
+                        <th class="px-4 py-3 text-left">Bank</th>
+                        <th class="px-4 py-3 text-left">Employee</th>
+                        <th class="px-4 py-3 text-left">Amount</th>
+                        <th class="px-4 py-3 text-left">Stage</th>
+                        <th class="px-4 py-3 text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <!-- BODY -->
+                <tbody class="divide-y divide-gray-100">
+
+                    @foreach ($loans as $index => $loan)
+                    <tr class="hover:bg-gray-50 transition">
+
+                        <!-- INDEX -->
+                        <td class="px-4 py-3 text-gray-500">
+                            {{ $loans->firstItem() + $index }}
+                        </td>
+
+                        <!-- CUSTOMER -->
+                        <td class="px-4 py-3 font-medium text-gray-800">
+                            {{ $loan->customer_name }}
+                        </td>
+
+                        <!-- BOOKING -->
+                        <td class="px-4 py-3 text-gray-600">
+                            {{ $loan->booking_id }}
+                        </td>
+
+                        <!-- UNIT -->
+                        <td class="px-4 py-3 text-gray-600">
+                            {{ $loan->unit_name }}
+                        </td>
+
+                        <!-- BANK -->
+                        <td class="px-4 py-3 text-gray-600">
+                            {{ $loan->bank_name }}
+                        </td>
+
+                        <!-- EMPLOYEE -->
+                        <td class="px-4 py-3 text-gray-600">
+                            {{ $loan->employee_name }}
+                        </td>
+
+                        <!-- AMOUNT -->
+                        <td class="px-4 py-3 text-green-600 font-semibold">
+                            {{ amountToPoints($loan->loan_amount) }}
+                        </td>
+
+                        <!-- STAGE -->
+                        <td class="px-4 py-3">
+                            <span class="px-3 py-1 text-xs font-medium rounded-full
+                                {{ $loan->loan_stage === 'Approved' ? 'bg-green-100 text-green-700' :
+                                   ($loan->loan_stage === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                   'bg-red-100 text-red-700') }}">
+                                {{ $loan->loan_stage }}
+                            </span>
+                        </td>
+
+                        <!-- ACTION -->
+                        <td class="px-4 py-3 text-center">
+                            <a href="#"
+                                class="inline-flex items-center px-3 py-1.5 text-xs bg-[#AC7E2C] text-white rounded-lg hover:bg-[#8C651F] transition">
+                                Edit
+                            </a>
+                        </td>
+
+                    </tr>
+                    @endforeach
+
+                </tbody>
+
+            </table>
+        </div>
+
         @endif
+
     </div>
+
+    <!-- PAGINATION -->
+    <div class="mt-6">
+        {{ $loans->withQueryString()->links() }}
+    </div>
+
 </section>
 @endsection
