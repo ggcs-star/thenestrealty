@@ -113,7 +113,7 @@ $hideDashboard = true;
 
         {{-- Submit --}}
         <div class="flex justify-end">
-            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition">
+            <button class="bg-[#AC7E2C] hover:bg-[#8C651F] text-white font-semibold px-6 py-2 rounded-lg transition">
                 Create Customer
             </button>
         </div>

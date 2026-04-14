@@ -81,7 +81,7 @@
                                     <td class="px-4 py-2 border text-center">
                                         <div class="flex justify-center gap-2 flex-wrap">
                                             <a href="{{ route('bookings.edit', $booking->id) }}"
-                                                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded transition">
+                                                class="bg-[#AC7E2C] hover:bg-[#8C651F] text-white text-xs font-medium px-3 py-1 rounded transition">
                                                 Edit
                                             </a>
                                             <form action="{{ route('bookings.destroy', $booking->id) }}" method="POST"
