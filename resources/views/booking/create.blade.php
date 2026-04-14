@@ -76,8 +76,8 @@
                 </div>
 
                 <div>
-                    <label for="project_id" class="block text-sm font-medium text-gray-700 mb-1">Select Project</label>
-                    <select name="project_id" id="project_id" required
+                    <label for="project_id3" class="block text-sm font-medium text-gray-700 mb-1">Select Project</label>
+                    <select name="project_id" id="project_id3" required
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-500 @error('project_id') border-red-500 @enderror">
                         <option value="">Select Project</option>
                         @forelse($projects as $project)
@@ -97,13 +97,11 @@
                 </div>
 
                 <!-- All Units Display -->
-                <div id="all-units-container" class="hidden">
-                    <!-- <label class="block text-sm font-medium text-gray-700 mb-1">Units (Green = Available, Red = Booked)</label> -->
-                    <div id="all-units"
-                        class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 p-4 bg-gray-50 rounded-lg">
-                        <!-- Units will be loaded here -->
+                <div id="all-units3-container" style="display:none;">
+                    <h3 style="margin:10px 0; font-weight:bold;">Units List</h3>
+
+                    <div id="all-units3" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Click on a green unit to select it</p>
                 </div>
 
                 <div>
@@ -118,7 +116,7 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-
+                <div id="units-output" style="margin-top:20px;">demo</div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Unit Size</label>
                     <div class="flex gap-4">
@@ -206,93 +204,75 @@
             </form>
         </div>
     </section>
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
 
-    <script>
-        const invoice = document.getElementById('invoice');
-        const other = document.getElementById('other');
-        const total = document.getElementById('total');
-        const projectSelect = document.getElementById('project_id');
-        const unitNameInput = document.getElementById('unit_name');
-        const allUnitsContainer = document.getElementById('all-units-container');
-        const allUnitsDiv = document.getElementById('all-units');
+                document.addEventListener('change', function (e) {
 
-        document.addEventListener('DOMContentLoaded', function () {
-            updateTotal();
-            if (projectSelect.value) {
-                loadAllUnits(projectSelect.value);
-            }
-        });
+                    if (e.target && e.target.id === 'project_id3') {
 
-        function updateTotal() {
-            const a = parseFloat(invoice.value) || 0;
-            const b = parseFloat(other.value) || 0;
-            total.value = (a + b).toFixed(2);
-        }
-        
-        // Calculate total when either input changes
-        invoice.addEventListener('input', updateTotal);
-        other.addEventListener('input', updateTotal);
-        
-        // Also calculate when values are changed programmatically
-        invoice.addEventListener('change', updateTotal);
-        other.addEventListener('change', updateTotal);
+                        const projectId = e.target.value;
 
-        projectSelect.addEventListener('change', function () {
-            if (this.value) {
-                loadAllUnits(this.value);
-            } else {
-                allUnitsContainer.classList.add('hidden');
-            }
-        });
+                        const output = document.getElementById('units-output');
 
-        function loadAllUnits(projectId) {
-            fetch(`/api/projects/${projectId}/units`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        displayAllUnits(data.units, data.booked_units);
-                        allUnitsContainer.classList.remove('hidden');
-                    } else {
-                        allUnitsContainer.classList.add('hidden');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading units:', error);
-                    allUnitsContainer.classList.add('hidden');
-                });
-        }
+                        if (!output) return;
 
-        function displayAllUnits(units, bookedUnits) {
-            allUnitsDiv.innerHTML = '';
-            if (!units || units.length === 0) {
-                allUnitsDiv.innerHTML = '<p class="text-gray-500 text-sm">No units found</p>';
-                return;
-            }
-            units.forEach(unit => {
-                const isBooked = bookedUnits && bookedUnits.includes(unit);
-                const unitElement = document.createElement('div');
-                unitElement.className = 'p-2 rounded text-center text-sm font-medium cursor-pointer transition-colors ' +
-                    (isBooked
-                        ? 'bg-red-100 border border-red-300 text-red-700 cursor-not-allowed line-through'
-                        : 'bg-green-100 border border-green-300 text-green-700 hover:bg-green-200');
-                unitElement.textContent = unit;
-                if (!isBooked) {
-                    unitElement.onclick = function () {
-                        let formattedUnit = unit;
-                        if (unit.match(/^[A-Z][A-Z0-9]\d+$/)) {
-                            formattedUnit = unit.replace(/([A-Z][A-Z0-9])(\d+)/, '$1 $2');
+                        if (!projectId) {
+                            output.innerHTML = '';
+                            return;
                         }
-                        unitNameInput.value = formattedUnit;
-                        document.querySelectorAll('#all-units > div').forEach(el => {
-                            el.classList.remove('ring-2', 'ring-blue-500');
-                        });
-                        this.classList.add('ring-2', 'ring-blue-500');
-                    };
-                }
-                allUnitsDiv.appendChild(unitElement);
+
+                        output.innerHTML = "Loading...";
+
+                        fetch(`/api/projects/${projectId}/units`)
+                            .then(res => res.json())
+                            .then(data => {
+
+                                console.log("📦 API DATA:", data);
+
+                                if (!data.units || data.units.length === 0) {
+                                    output.innerHTML = "No units found";
+                                    return;
+                                }
+
+                                let html = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">`;
+
+                                const bookedUnits = data.booked_units || [];
+
+                                data.units.forEach(unit => {
+
+                                    const size = data.unit_sizes?.[unit] || 'N/A';
+                                    const isBooked = bookedUnits.includes(unit);
+
+                                    html += `
+                                    <div style="
+                                        border:1px solid #ccc;
+                                        padding:10px;
+                                        border-radius:6px;
+                                        text-align:center;
+                                        background:${isBooked ? '#ddd' : '#c8f7c5'};
+                                    ">
+                                        <div><b>${unit}</b></div>
+                                        <div style="font-size:12px;">${size}</div>
+                                    </div>
+                                `;
+                                });
+
+                                html += `</div>`;
+
+                                output.innerHTML = html;
+
+                            })
+                            .catch(err => {
+                                console.error("❌ API ERROR:", err);
+                            });
+
+                    }
+
+                });
+
             });
-        }
-   
-   
-   </script>
+        </script>
+    @endpush
 @endsection
