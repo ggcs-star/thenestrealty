@@ -91,42 +91,78 @@ class CollectionController extends Controller
 
 
 
-    public function listCollections(): View
+//     public function listCollections(): View
+// {
+//     try {
+//         $query = Collection::with(['customer', 'booking']);
+
+//         // ✅ Check agar employee login hai
+//         if (auth('employee')->check()) {
+//             $employeeId = auth('employee')->id();
+//             $query->where('employee_id', $employeeId);
+//         }
+
+//         $filter = strtolower(request('filter'));
+//         $from = request('from');
+//         $to = request('to');
+//         $specificDate = request('date');
+//         $today = now()->toDateString();
+
+//         switch ($filter) {
+//             case 'today':
+//                 $query->whereDate('date', $today);
+//                 break;
+//             case 'backlog':
+//                 $query->whereDate('date', '<', $today);
+//                 break;
+//             case 'upcoming':
+//                 $query->whereDate('date', '>', $today);
+//                 break;
+//             case 'complete':
+//                 // Example agar status use karte ho
+//                 // $query->where('status', 'completed');
+//                 break;
+//         }
+
+//         if ($specificDate) {
+//             $query->whereDate('date', $specificDate);
+//         }
+
+//         if ($from && $to) {
+//             $query->whereBetween('date', [$from, $to]);
+//         } elseif ($from) {
+//             $query->whereDate('date', '>=', $from);
+//         } elseif ($to) {
+//             $query->whereDate('date', '<=', $to);
+//         }
+
+//         $collections = $query->orderBy('date', 'desc')->get();
+
+//         return view('collections.list', compact('collections'));
+//     } catch (\Exception $e) {
+//         Log::error("Failed to fetch collections", [
+//             'error' => $e->getMessage()
+//         ]);
+
+//         return view('collections.list', ['collections' => collect()])
+//             ->withErrors(['error' => 'Failed to load collections: ' . $e->getMessage()]);
+//     }
+// }
+
+
+public function listCollections(): View
 {
     try {
         $query = Collection::with(['customer', 'booking']);
 
-        // ✅ Check agar employee login hai
+        // 👤 Employee filter
         if (auth('employee')->check()) {
-            $employeeId = auth('employee')->id();
-            $query->where('employee_id', $employeeId);
+            $query->where('employee_id', auth('employee')->id());
         }
 
-        $filter = strtolower(request('filter'));
+        // 📅 DATE FILTER
         $from = request('from');
         $to = request('to');
-        $specificDate = request('date');
-        $today = now()->toDateString();
-
-        switch ($filter) {
-            case 'today':
-                $query->whereDate('date', $today);
-                break;
-            case 'backlog':
-                $query->whereDate('date', '<', $today);
-                break;
-            case 'upcoming':
-                $query->whereDate('date', '>', $today);
-                break;
-            case 'complete':
-                // Example agar status use karte ho
-                // $query->where('status', 'completed');
-                break;
-        }
-
-        if ($specificDate) {
-            $query->whereDate('date', $specificDate);
-        }
 
         if ($from && $to) {
             $query->whereBetween('date', [$from, $to]);
@@ -136,21 +172,38 @@ class CollectionController extends Controller
             $query->whereDate('date', '<=', $to);
         }
 
-        $collections = $query->orderBy('date', 'desc')->get();
+        // 🎯 STATUS FILTER (NEW)
+        if (request('status')) {
+            $query->where('status', request('status'));
+        }
+
+        // 🔍 SEARCH (NEW)
+        if (request('search')) {
+            $search = request('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('customer', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%$search%");
+                })->orWhereHas('booking', function ($q3) use ($search) {
+                    $q3->where('booking_id', 'like', "%$search%");
+                });
+            });
+        }
+
+        // ✅ PAGINATION (MAIN FIX)
+        $collections = $query->orderBy('date', 'desc')->paginate(10);
 
         return view('collections.list', compact('collections'));
+
     } catch (\Exception $e) {
         Log::error("Failed to fetch collections", [
             'error' => $e->getMessage()
         ]);
 
         return view('collections.list', ['collections' => collect()])
-            ->withErrors(['error' => 'Failed to load collections: ' . $e->getMessage()]);
+            ->withErrors(['error' => 'Failed to load collections']);
     }
 }
-
-
-
     public function test()
     {
         try {
