@@ -10,6 +10,7 @@ use App\Models\ChannelPartner;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\Commission;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CommissionController extends Controller
 {
@@ -23,37 +24,74 @@ class CommissionController extends Controller
             'user' => $request->user()
         ]);
     }
-
-public function create(Request $request): \Illuminate\View\View
+    public function show($id)
 {
-    $booking = session('booking');
+    $commission = Commission::with([
+        'partner',
+        'project',
+        'customer',
+        'booking'
+    ])->findOrFail($id);
 
-    $bookings = \App\Models\Booking::select('id', 'booking_id')->get();
-
-    return view('commission.create', compact('booking', 'bookings'));
+    return view('commission.show', compact('commission'));
 }
 
-public function fetch(Request $request): \Illuminate\Http\RedirectResponse
+public function invoice($id)
 {
-    $request->validate([
-        'booking_id' => 'required|string|exists:bookings,booking_id',
-    ]);
+    $commission = Commission::with(['partner','project','customer'])->findOrFail($id);
 
-    $booking = Booking::with(['project', 'customer', 'channelPartner'])
-                      ->where('booking_id', $request->booking_id)
-                      ->first();
+    return view('commission.invoice', compact('commission'));
+}
+public function updateStatus(Request $request, $id)
+{
+    $commission = Commission::findOrFail($id);
 
-    if (!$booking) {
-        return redirect()->route('commissions.create')->withErrors([
-            'booking_id' => 'Booking not found with the provided ID.'
-        ]);
+    $commission->payment_status = $request->payment_status;
+    $commission->save();
+
+    return back()->with('success', 'Status updated successfully');
+}
+
+
+public function download($id)
+{
+    $commission = Commission::with(['partner','project','customer'])->findOrFail($id);
+
+    $pdf = Pdf::loadView('commission.invoice', compact('commission'));
+
+    return $pdf->download('commission_invoice_'.$commission->id.'.pdf');
+}
+
+    public function create(Request $request): \Illuminate\View\View
+    {
+        $booking = session('booking');
+
+        $bookings = \App\Models\Booking::select('id', 'booking_id')->get();
+
+        return view('commission.create', compact('booking', 'bookings'));
     }
 
-    // Pass booking_id in URL and full object in session (flash)
-    return redirect()
-        ->route('commissions.create', ['booking_id' => $booking->booking_id])
-        ->with('booking', $booking);
-}
+    public function fetch(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'booking_id' => 'required|string|exists:bookings,booking_id',
+        ]);
+
+        $booking = Booking::with(['project', 'customer', 'channelPartner'])
+            ->where('booking_id', $request->booking_id)
+            ->first();
+
+        if (!$booking) {
+            return redirect()->route('commissions.create')->withErrors([
+                'booking_id' => 'Booking not found with the provided ID.'
+            ]);
+        }
+
+        // Pass booking_id in URL and full object in session (flash)
+        return redirect()
+            ->route('commissions.create', ['booking_id' => $booking->booking_id])
+            ->with('booking', $booking);
+    }
 
     // Store commission in DB
     public function store(Request $request): RedirectResponse
@@ -66,7 +104,8 @@ public function fetch(Request $request): \Illuminate\Http\RedirectResponse
             'unit_name' => 'required|string',
             'partner_commission_rate' => 'required|string',
             'amount' => 'required|numeric',
-            'total_amount' => 'required|numeric'
+            'total_amount' => 'required|numeric',
+            'payment_status' => 'required|in:pending,confirmed'
         ]);
 
 
@@ -94,8 +133,8 @@ public function fetch(Request $request): \Illuminate\Http\RedirectResponse
     }
 
     public function index()
-        {
-            return redirect()->route('commissions.create');
-        }
+    {
+        return redirect()->route('commissions.create');
+    }
 
 }
