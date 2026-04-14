@@ -25,42 +25,42 @@ class CommissionController extends Controller
         ]);
     }
     public function show($id)
-{
-    $commission = Commission::with([
-        'partner',
-        'project',
-        'customer',
-        'booking'
-    ])->findOrFail($id);
+    {
+        $commission = Commission::with([
+            'partner',
+            'project',
+            'customer',
+            'booking'
+        ])->findOrFail($id);
 
-    return view('commission.show', compact('commission'));
-}
+        return view('commission.show', compact('commission'));
+    }
 
-public function invoice($id)
-{
-    $commission = Commission::with(['partner','project','customer'])->findOrFail($id);
+    public function invoice($id)
+    {
+        $commission = Commission::with(['partner', 'project', 'customer'])->findOrFail($id);
 
-    return view('commission.invoice', compact('commission'));
-}
-public function updateStatus(Request $request, $id)
-{
-    $commission = Commission::findOrFail($id);
+        return view('commission.invoice', compact('commission'));
+    }
+    public function updateStatus(Request $request, $id)
+    {
+        $commission = Commission::findOrFail($id);
 
-    $commission->payment_status = $request->payment_status;
-    $commission->save();
+        $commission->payment_status = $request->payment_status;
+        $commission->save();
 
-    return back()->with('success', 'Status updated successfully');
-}
+        return back()->with('success', 'Status updated successfully');
+    }
 
 
-public function download($id)
-{
-    $commission = Commission::with(['partner','project','customer'])->findOrFail($id);
+    public function download($id)
+    {
+        $commission = Commission::with(['partner', 'project', 'customer'])->findOrFail($id);
 
-    $pdf = Pdf::loadView('commission.invoice', compact('commission'));
+        $pdf = Pdf::loadView('commission.invoice', compact('commission'));
 
-    return $pdf->download('commission_invoice_'.$commission->id.'.pdf');
-}
+        return $pdf->download('commission_invoice_' . $commission->id . '.pdf');
+    }
 
     public function create(Request $request): \Illuminate\View\View
     {
@@ -135,6 +135,154 @@ public function download($id)
     public function index()
     {
         return redirect()->route('commissions.create');
+    }
+
+
+
+    public function report(Request $request)
+    {
+        $query = Commission::with(['partner', 'project', 'customer', 'booking']);
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+
+            $query->where(function ($q) use ($search) {
+
+                $q->whereHas('partner', function ($q) use ($search) {
+                    $q->where('partner_name', 'like', "%{$search}%");
+                })
+
+                    ->orWhereHas('project', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+
+                    ->orWhereHas('customer', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+
+                    ->orWhere('unit_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('partner_id')) {
+            $query->where('partner_id', $request->partner_id);
+        }
+
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->project_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('payment_status', $request->status);
+        }
+
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $query->whereBetween('created_at', [
+                $request->from_date . ' 00:00:00',
+                $request->to_date . ' 23:59:59'
+            ]);
+        } elseif ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        } elseif ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $query->latest();
+
+        $commissions = $query->get();
+
+        $grouped = $commissions->groupBy('partner_id')->map(function ($partnerData) {
+
+            $projects = $partnerData->groupBy('project_id')->map(function ($projectData) {
+                return [
+                    'project' => $projectData->first()->project,
+                    'total' => $projectData->sum('amount'),
+                    'paid' => $projectData->where('payment_status', 'confirmed')->sum('amount'),
+                    'pending' => $projectData->where('payment_status', 'pending')->sum('amount'),
+                    'items' => $projectData
+                ];
+            })->values();
+
+            return [
+                'partner' => $partnerData->first()->partner,
+                'total' => $partnerData->sum('amount'),
+                'paid' => $partnerData->where('payment_status', 'confirmed')->sum('amount'),
+                'pending' => $partnerData->where('payment_status', 'pending')->sum('amount'),
+                'items_count' => $partnerData->count(),
+                'projects' => $projects
+            ];
+        })->values();
+
+        $totalCommission = $commissions->sum('amount');
+        $totalPartners = $grouped->count();
+        $paid = $commissions->where('payment_status', 'confirmed')->sum('amount');
+        $pending = $commissions->where('payment_status', 'pending')->sum('amount');
+
+        return view('reports.commission', compact(
+            'grouped',
+            'totalCommission',
+            'totalPartners',
+            'paid',
+            'pending'
+        ));
+    }
+
+    public function partnerReport($id)
+    {
+        $commissions = Commission::with([
+            'partner:id,partner_name',
+            'project:id,name',
+            'customer:id,name',
+            'booking:id' 
+        ])
+            ->where('partner_id', $id)
+            ->latest()
+            ->get();
+
+        if ($commissions->isEmpty()) {
+            return back()->with('error', 'No data found');
+        }
+
+        $partner = $commissions->first()->partner;
+
+        $projects = $commissions->groupBy('project_id')->map(function ($projectData) {
+
+            return [
+                'project_name' => $projectData->first()->project->name ?? 'N/A',
+
+                'total' => $projectData->sum('amount'),
+                'paid' => $projectData->where('payment_status', 'confirmed')->sum('amount'),
+                'pending' => $projectData->where('payment_status', 'pending')->sum('amount'),
+
+                'bookings' => $projectData->map(function ($item) {
+                    return [
+                        'booking_id' => $item->booking_id ?? 'N/A',
+                        'customer' => $item->customer->name ?? 'N/A',
+                        'unit' => $item->unit_name,
+
+                        'total_amount' => $item->total_amount,
+                        'commission_rate' => $item->partner_commission_rate,
+                        'amount' => $item->amount,
+
+                        'status' => $item->payment_status,
+                        'date' => $item->created_at->format('d M Y'),
+                    ];
+                })->values()
+
+            ];
+        })->values();
+
+        $total = $commissions->sum('amount');
+        $paid = $commissions->where('payment_status', 'confirmed')->sum('amount');
+        $pending = $commissions->where('payment_status', 'pending')->sum('amount');
+
+        return view('reports.partner_commission', compact(
+            'partner',
+            'projects',
+            'total',
+            'paid',
+            'pending'
+        ));
     }
 
 }
