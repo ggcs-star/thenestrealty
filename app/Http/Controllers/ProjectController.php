@@ -24,20 +24,57 @@ class ProjectController extends Controller
             'employees' => $employees,
         ]);
     }
+    public function list(Request $request): View
+{
+    $query = Project::with('employee');
 
-
-    public function list(): View
-    {
-        if (auth('employee')->check()) {
-            $projects = Project::with('employee')
-                ->where('assigned_employee', auth('employee')->id())
-                ->get();
-        } else {
-            $projects = Project::with('employee')->get();
-        }
-
-        return view('project.list', compact('projects'));
+    // 👤 Employee restriction
+    if (auth('employee')->check()) {
+        $query->where('assigned_employee', auth('employee')->id());
     }
+
+    // 🔍 Search filter
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->search . '%')
+              ->orWhere('builder_name', 'LIKE', '%' . $request->search . '%')
+              ->orWhere('builder_number', 'LIKE', '%' . $request->search . '%');
+        });
+    }
+
+    // 📊 Status filter
+    if ($request->status) {
+        $query->where('status', $request->status);
+    }
+
+    // 👨‍💼 Employee filter (admin only)
+    if ($request->employee_id && !auth('employee')->check()) {
+        $query->where('assigned_employee', $request->employee_id);
+    }
+
+    // ✅ PAGINATION
+    $projects = $query->latest()->paginate(5)->withQueryString();
+
+    $employees = Employee::all();
+
+    return view('project.list', compact('projects', 'employees'));
+}
+
+
+    // public function list(): View
+    // {
+    //     if (auth('employee')->check()) {
+    //         // Employee login hai → sirf uske records
+    //         $projects = Project::with('employee')
+    //             ->where('assigned_employee', auth('employee')->id())
+    //             ->get();
+    //     } else {
+    //         // Admin login hai → sabhi records
+    //         $projects = Project::with('employee')->get();
+    //     }
+
+    //     return view('project.list', compact('projects'));
+    // }
 
 
     public function store(Request $request): RedirectResponse

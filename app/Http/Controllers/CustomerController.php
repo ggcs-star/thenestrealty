@@ -15,23 +15,47 @@ use App\Models\ChannelPartner;
 class CustomerController extends Controller
 {
 
+// public function list(Request $request): View
+// {
+//     if (auth('employee')->check()) {
+//         // Agar employee login hai → sirf apne customers
+//         $employeeId = auth('employee')->id();
+//         $customers = Customer::with('collections')
+//             ->where('employee_id', $employeeId)
+//             ->get();
+//     } else {
+//         // Admin ya default guard → sabhi customers
+//         $customers = Customer::with('collections')->get();
+//     }
+
+//     return view('customer.list', compact('customers'));
+// }
+
 public function list(Request $request): View
 {
+    $query = Customer::with('collections');
+
+    // 👤 Employee filter
     if (auth('employee')->check()) {
-        // Agar employee login hai → sirf apne customers
-        $employeeId = auth('employee')->id();
-        $customers = Customer::with('collections')
-            ->where('employee_id', $employeeId)
-            ->get();
-    } else {
-        // Admin ya default guard → sabhi customers
-        $customers = Customer::with('collections')->get();
+        $query->where('employee_id', auth('employee')->id());
     }
+
+    // 🔍 SEARCH FILTER
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%')
+              ->orWhere('email', 'like', '%' . $request->search . '%')
+              ->orWhere('contact_number', 'like', '%' . $request->search . '%')
+              ->orWhere('aadhar_number', 'like', '%' . $request->search . '%')
+              ->orWhere('pan_number', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    // 📄 PAGINATION
+    $customers = $query->latest()->paginate(10);
 
     return view('customer.list', compact('customers'));
 }
-
-
 
 
 

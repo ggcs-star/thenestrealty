@@ -37,65 +37,81 @@
     </nav>
 
     <!-- Stat Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 pt-6 lg:pt-4">
-        <!-- Card -->
-        <div class="bg-yellow-600 text-white rounded shadow p-4 text-center">
-            <div class="text-2xl font-bold">{{ $totalPartners }}</div>
-            <div>Total Partners</div>
-            <a href="{{ route('partner.list') }}">
-                <button class="mt-2 bg-yellow-800 hover:bg-yellow-700 text-white py-1 px-4 rounded w-full sm:w-auto">
-                    View
-                </button>
-            </a>
-        </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-10 pt-6">
 
-        <div class="bg-green-500 text-white rounded shadow p-4 text-center">
-            <div class="text-2xl font-bold">{{ $totalProject }}</div>
-            <div>Total Projects</div>
-            <a href="{{ route('projects.list') }}">
-                <button class="mt-2 bg-green-700 hover:bg-green-600 text-white py-1 px-4 rounded w-full sm:w-auto">
-                    View
-                </button>
-            </a>
-        </div>
+    <!-- CARD 1 -->
+    <div class="rounded-2xl p-5 text-gray-800 shadow-sm hover:shadow-md transition bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200">
+        <div class="text-3xl font-bold text-yellow-700">{{ $totalPartners }}</div>
+        <div class="text-sm text-gray-600">Total Partners</div>
 
-        <div class="bg-purple-600 text-white rounded shadow p-4 text-center">
-            <div class="text-2xl font-bold">{{$totalBooking}}</div>
-            <div>Total Bookings</div>
-            <a href="{{ route('bookings.list') }}">
-                <button class="mt-2 bg-purple-800 hover:bg-purple-700 text-white py-1 px-4 rounded w-full sm:w-auto">
-                    View
-                </button>
-            </a>
-        </div>
-        <div class="bg-green-800 text-white rounded shadow p-4 text-center">
-            <div class="text-2xl font-bold">{{$totalCollection}}</div>
-            <div>Total Collections</div>
-            <a href="{{ route('collections.list') }}">
-                <button class="mt-2 bg-green-900 hover:bg-green-700 text-white py-1 px-4 rounded w-full sm:w-auto">
-                    View
-                </button>
-            </a>
-        </div>
-        <div class="bg-orange-500 text-white rounded shadow p-4 text-center">
-            <div class="text-2xl font-bold">{{$totalCommission}}</div>
-            <div>Total Commission</div>
-            <a href="{{ route('commissions.list') }}">
-                <button class="mt-2 bg-orange-700 hover:bg-orange-600 text-white py-1 px-4 rounded w-full sm:w-auto">
-                    View
-                </button>
-            </a>
-        </div>
-        <div class="bg-red-600 text-white rounded shadow p-4 text-center">
-            <div class="text-2xl font-bold">{{$totalEmployees}}</div>
-            <div>Total Employees</div>
-            <a href="{{ route('employees.index') }}">
-                <button class="mt-2 bg-red-800 hover:bg-red-700 text-white py-1 px-4 rounded w-full sm:w-auto">
-                    View
-                </button>
-            </a>
-        </div>
+        <a href="{{ route('partner.list') }}">
+            <div class="mt-3 text-sm font-semibold text-yellow-700 hover:underline">
+                View Details →
+            </div>
+        </a>
     </div>
+
+    <!-- CARD 2 -->
+    <div class="rounded-2xl p-5 text-gray-800 shadow-sm hover:shadow-md transition bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
+        <div class="text-3xl font-bold text-green-700">{{ $totalProject }}</div>
+        <div class="text-sm text-gray-600">Projects</div>
+
+        <a href="{{ route('projects.list') }}">
+            <div class="mt-3 text-sm font-semibold text-green-700 hover:underline">
+                View Details →
+            </div>
+        </a>
+    </div>
+
+    <!-- CARD 3 -->
+    <div class="rounded-2xl p-5 text-gray-800 shadow-sm hover:shadow-md transition bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200">
+        <div class="text-3xl font-bold text-purple-700">{{$totalBooking}}</div>
+        <div class="text-sm text-gray-600">Bookings</div>
+
+        <a href="{{ route('bookings.list') }}">
+            <div class="mt-3 text-sm font-semibold text-purple-700 hover:underline">
+                View Details →
+            </div>
+        </a>
+    </div>
+
+    <!-- CARD 4 -->
+    <div class="rounded-2xl p-5 text-gray-800 shadow-sm hover:shadow-md transition bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
+        <div class="text-3xl font-bold text-blue-700">{{$totalCollection}}</div>
+        <div class="text-sm text-gray-600">Collections</div>
+
+        <a href="{{ route('collections.list') }}">
+            <div class="mt-3 text-sm font-semibold text-blue-700 hover:underline">
+                View Details →
+            </div>
+        </a>
+    </div>
+
+    <!-- CARD 5 -->
+    <div class="rounded-2xl p-5 text-gray-800 shadow-sm hover:shadow-md transition bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200">
+        <div class="text-3xl font-bold text-orange-700">{{$totalCommission}}</div>
+        <div class="text-sm text-gray-600">Commission</div>
+
+        <a href="{{ route('commissions.list') }}">
+            <div class="mt-3 text-sm font-semibold text-orange-700 hover:underline">
+                View Details →
+            </div>
+        </a>
+    </div>
+
+    <!-- CARD 6 -->
+    <div class="rounded-2xl p-5 text-gray-800 shadow-sm hover:shadow-md transition bg-gradient-to-br from-red-50 to-red-100 border border-red-200">
+        <div class="text-3xl font-bold text-red-700">{{$totalEmployees}}</div>
+        <div class="text-sm text-gray-600">Employees</div>
+
+        <a href="{{ route('employees.index') }}">
+            <div class="mt-3 text-sm font-semibold text-red-700 hover:underline">
+                View Details →
+            </div>
+        </a>
+    </div>
+
+</div>
 
     <!-- Follow-up Status Section -->
     <div class="mb-4">
@@ -132,7 +148,7 @@
             <a href="{{ route('collections.list', ['filter' => 'today']) }}" class="group flex justify-center mt-2">
                 <div class="relative inline-block">
                     <h5
-                        class="text-center py-2 mt-auto text-white bg-blue-600 hover:bg-blue-500 cursor-pointer rounded-md px-4 group-hover:text-white">
+                        class="text-center py-2 mt-auto text-white bg-[#AC7E2C] hover:bg-[#8C651F] cursor-pointer rounded-md px-4 group-hover:text-white">
                         View All
                     </h5>
                 </div>
@@ -175,7 +191,7 @@
             <a href="{{ route('collections.list', ['filter' => 'backlog']) }}" class="group flex justify-center mt-2">
                 <div class="relative inline-block">
                     <h5
-                        class="text-center py-2 mt-auto text-white bg-blue-600 hover:bg-blue-500 cursor-pointer rounded-md px-4 group-hover:text-white">
+                        class="text-center py-2 mt-auto text-white bg-[#AC7E2C] hover:bg-[#8C651F] cursor-pointer rounded-md px-4 group-hover:text-white">
                         View All
                     </h5>
                 </div>
@@ -208,7 +224,7 @@
             <a href="{{ route('collections.list', ['filter' => 'upcoming']) }}" class="group flex justify-center mt-2">
                 <div class="relative inline-block">
                     <h5
-                        class="text-center py-2 mt-auto text-white bg-blue-600 hover:bg-blue-500 cursor-pointer rounded-md px-4 group-hover:text-white">
+                        class="text-center py-2 mt-auto text-white bg-[#AC7E2C] hover:bg-[#8C651F] cursor-pointer rounded-md px-4 group-hover:text-white">
                         View All
                     </h5>
                 </div>
@@ -238,7 +254,7 @@
 <a href="{{ route('collections.list', ['filter' => 'complete']) }}" class="group flex justify-center mt-2">
                 <div class="relative inline-block">
                     <h5
-                        class="text-center py-2 mt-auto text-white bg-blue-600 hover:bg-blue-500 cursor-pointer rounded-md px-4 group-hover:text-white">
+                        class="text-center py-2 mt-auto text-white bg-[#AC7E2C] hover:bg-[#8C651F] cursor-pointer rounded-md px-4 group-hover:text-white">
                         View All
                     </h5>
                 </div>
@@ -368,7 +384,7 @@
             </div>
         </div>
     </div>
-
+    
 
     <!-- Charts Section -->
     <div class="hidden grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -377,7 +393,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
                 <input type="text" class="border border-gray-300 rounded px-4 py-2 w-full sm:w-48" value="April 2025"
                     readonly />
-                <button class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto">
+                <button class="bg-[#AC7E2C] hover:bg-[#8C651F] text-white px-4 py-2 rounded w-full sm:w-auto">
                     <i class="fas fa-search"></i>
                 </button>
             </div>

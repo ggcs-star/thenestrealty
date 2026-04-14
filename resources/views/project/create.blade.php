@@ -80,7 +80,7 @@
 
             <div class="flex justify-end">
                 <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+                    class="bg-[#AC7E2C] hover:bg-[#8C651F] text-white font-semibold py-2 px-6 rounded-lg transition">
                     Create Project
                 </button>
             </div>

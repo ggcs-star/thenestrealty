@@ -105,40 +105,93 @@ class BookingController extends Controller
     /**
      * List all bookings.
      */
-  public function list(Request $request): View
+//   public function list(Request $request): View
+// {
+//     $query = Booking::with(['customer', 'project', 'channelPartner']);
+
+//     $from = $request->input('from');
+//     $to = $request->input('to');
+//     $specificDate = $request->input('date');
+
+//     // Role-based filtering
+//     if (auth('employee')->check()) {
+//         $employeeId = auth('employee')->id();
+//         $query->where('employee_id', $employeeId); // sirf employee ke records
+//     }
+//     // Admin ke liye no filter, sab records dikhenge
+
+//     // Date filters
+//     if ($specificDate) {
+//         $query->whereDate('followup_date', $specificDate);
+//     }
+
+//     if ($from && $to) {
+//         $query->whereBetween('followup_date', [$from, $to]);
+//     } elseif ($from) {
+//         $query->whereDate('followup_date', '>=', $from);
+//     } elseif ($to) {
+//         $query->whereDate('followup_date', '<=', $to);
+//     }
+
+//     $bookings = $query->orderBy('followup_date', 'desc')->get();
+
+//     return view('booking.list', compact('bookings'));
+// }
+
+public function list(Request $request): View
 {
     $query = Booking::with(['customer', 'project', 'channelPartner']);
 
-    $from = $request->input('from');
-    $to = $request->input('to');
-    $specificDate = $request->input('date');
-
-    // Role-based filtering
+    // 👤 Employee filter
     if (auth('employee')->check()) {
-        $employeeId = auth('employee')->id();
-        $query->where('employee_id', $employeeId); // sirf employee ke records
-    }
-    // Admin ke liye no filter, sab records dikhenge
-
-    // Date filters
-    if ($specificDate) {
-        $query->whereDate('followup_date', $specificDate);
+        $query->where('employee_id', auth('employee')->id());
     }
 
-    if ($from && $to) {
-        $query->whereBetween('followup_date', [$from, $to]);
-    } elseif ($from) {
-        $query->whereDate('followup_date', '>=', $from);
-    } elseif ($to) {
-        $query->whereDate('followup_date', '<=', $to);
+    // 🔍 SEARCH (UPGRADED)
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('booking_id', 'like', '%' . $request->search . '%')
+              ->orWhere('unit_name', 'like', '%' . $request->search . '%')
+              ->orWhereHas('customer', function ($q2) use ($request) {
+                  $q2->where('name', 'like', '%' . $request->search . '%');
+              })
+              ->orWhereHas('project', function ($q3) use ($request) {
+                  $q3->where('name', 'like', '%' . $request->search . '%');
+              });
+        });
     }
 
-    $bookings = $query->orderBy('followup_date', 'desc')->get();
+    // ✅ STATUS FILTER (MAIN FIX)
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
 
-    return view('booking.list', compact('bookings'));
+    // 📅 DATE FILTER
+    if ($request->filled('from') && $request->filled('to')) {
+        $query->whereBetween('booking_date', [$request->from, $request->to]);
+    } elseif ($request->filled('from')) {
+        $query->whereDate('booking_date', '>=', $request->from);
+    } elseif ($request->filled('to')) {
+        $query->whereDate('booking_date', '<=', $request->to);
+    }
+
+    // ✅ PAGINATION
+    $bookings = $query->latest()->paginate(5);
+
+    // ✅ GLOBAL STATS (IMPORTANT FIX)
+    $totalBookings = Booking::count();
+    $totalBooked = Booking::where('status', 'Booked')->count();
+    $totalPending = Booking::where('status', 'Pending')->count();
+    $totalRevenue = Booking::sum('total_amount');
+
+    return view('booking.list', compact(
+        'bookings',
+        'totalBookings',
+        'totalBooked',
+        'totalPending',
+        'totalRevenue'
+    ));
 }
-
-
 
     public function edit($id): View
     {

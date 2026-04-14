@@ -90,20 +90,43 @@ class LoanController extends Controller
 
 
 
-   public function list()
+//    public function list()
+// {
+//     if (auth('employee')->check()) {
+//         // employee login -> sirf apna data
+//         $employeeId = auth('employee')->id();
+//         $loans = Loan::where('employee_id', $employeeId)->get();
+//     } else {
+//         // admin login -> sabhi data
+//         $loans = Loan::all();
+//     }
+
+//     return view('loan.list', compact('loans'));
+// }
+
+public function list(Request $request)
 {
-    if (auth('employee')->check()) {
-        // employee login -> sirf apna data
-        $employeeId = auth('employee')->id();
-        $loans = Loan::where('employee_id', $employeeId)->get();
-    } else {
-        // admin login -> sabhi data
-        $loans = Loan::all();
+    $query = Loan::query();
+
+    // 🔍 SEARCH
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('customer_name', 'like', '%' . $request->search . '%')
+              ->orWhere('booking_id', 'like', '%' . $request->search . '%')
+              ->orWhere('unit_name', 'like', '%' . $request->search . '%')
+              ->orWhere('bank_name', 'like', '%' . $request->search . '%');
+        });
     }
+
+    // 🎯 STAGE FILTER
+    if ($request->filled('stage')) {
+        $query->where('loan_stage', $request->stage);
+    }
+
+    // 📄 PAGINATION
+    $loans = $query->latest()->paginate(10);
 
     return view('loan.list', compact('loans'));
 }
-
-
 }
 ;

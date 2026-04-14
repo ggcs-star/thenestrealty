@@ -13,35 +13,72 @@ class ChannelPartnerController extends Controller
     /**
      * Display a listing of the channel partners with optional date filtering.
      */
-    public function list(Request $request): View
-    {
-       $query = ChannelPartner::query();
+    // public function list(Request $request): View
+    // {
+    //    $query = ChannelPartner::query();
 
-    // Apply date filters if present
+    // // Apply date filters if present
+    // if ($request->filled('from') && $request->filled('to')) {
+    //     $from = Carbon::parse($request->from)->startOfDay();
+    //     $to = Carbon::parse($request->to)->endOfDay();
+    //     $query->whereBetween('created_at', [$from, $to]);
+    // } elseif ($request->filled('from')) {
+    //     $from = Carbon::parse($request->from)->startOfDay();
+    //     $query->where('created_at', '>=', $from);
+    // } elseif ($request->filled('to')) {
+    //     $to = Carbon::parse($request->to)->endOfDay();
+    //     $query->where('created_at', '<=', $to);
+    // }
+
+    // // Apply employee filter
+    // if (auth('employee')->check()) {
+    //     $employeeId = auth('employee')->id();
+    //     $query->where('employee_id', $employeeId); // Only this employee's records
+    // }
+
+    // // Admin (default guard) gets all records
+    // $partners = $query->orderBy('created_at', 'desc')->get();
+
+    // return view('partner.list', compact('partners'));
+    // }
+
+    public function list(Request $request): View
+{
+    $query = ChannelPartner::query();
+
+    // 🔍 SEARCH FILTER
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('partner_name', 'like', '%' . $request->search . '%')
+              ->orWhere('mail_id', 'like', '%' . $request->search . '%')
+              ->orWhere('number_contact', 'like', '%' . $request->search . '%');
+        });
+    }
+       if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // 📅 DATE FILTER
     if ($request->filled('from') && $request->filled('to')) {
         $from = Carbon::parse($request->from)->startOfDay();
         $to = Carbon::parse($request->to)->endOfDay();
         $query->whereBetween('created_at', [$from, $to]);
     } elseif ($request->filled('from')) {
-        $from = Carbon::parse($request->from)->startOfDay();
-        $query->where('created_at', '>=', $from);
+        $query->where('created_at', '>=', Carbon::parse($request->from)->startOfDay());
     } elseif ($request->filled('to')) {
-        $to = Carbon::parse($request->to)->endOfDay();
-        $query->where('created_at', '<=', $to);
+        $query->where('created_at', '<=', Carbon::parse($request->to)->endOfDay());
     }
 
-    // Apply employee filter
+    // 👤 EMPLOYEE FILTER
     if (auth('employee')->check()) {
-        $employeeId = auth('employee')->id();
-        $query->where('employee_id', $employeeId); // Only this employee's records
+        $query->where('employee_id', auth('employee')->id());
     }
 
-    // Admin (default guard) gets all records
-    $partners = $query->orderBy('created_at', 'desc')->get();
+    // ✅ PAGINATION (IMPORTANT CHANGE)
+    $partners = $query->latest()->paginate(10);
 
     return view('partner.list', compact('partners'));
-    }
-
+}
     /**
      * Show the form to create a new channel partner.
      */

@@ -106,7 +106,7 @@
                 <input type="password" name="password_confirmation" class="w-full border px-3 py-2 rounded">
             </div>
 
-            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            <button class="bg-[#AC7E2C] hover:bg-[#8C651F] text-white px-4 py-2 rounded">
                 Update Employee
             </button>
         </form>

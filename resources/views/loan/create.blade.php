@@ -116,7 +116,7 @@
                 <!-- Submit -->
                 <div class="flex justify-end">
                     <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-md transition">
+                        class="bg-[#AC7E2C] hover:bg-[#8C651F] text-white font-semibold px-6 py-2 rounded-md transition">
                         Submit Loan
                     </button>
                 </div>
