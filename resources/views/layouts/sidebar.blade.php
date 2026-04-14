@@ -1,4 +1,5 @@
-{{-- ░░░ 1. HAMBURGER (show < 768 px) ░░░ --}} <header
+{{-- ░░░ 1. HAMBURGER (show < 768 px) ░░░ --}}
+<header
     class="mt-[65px] sticky h-9/10 bg-gray-800 text-white flex items-start justify-between p-3 md:hidden z-10 w-16">
     <span class="font-semibold"></span>
     <button id="sidebarToggle" class="p-2 rounded focus:outline-none focus:ring-2 focus:ring-white"
@@ -185,8 +186,8 @@
                 {{-- Dropdown Menu --}}
                 <li>
                     <button onclick="toggleDropdown('{{ $menu['id'] }}')"
-class="w-full flex items-center justify-between px-3 py-2 rounded transition focus:outline-none
-{{ Request::is(strtolower(str_replace(' ', '-', $title)).'*') ? 'bg-[#AC7E2C] text-white' : 'hover:bg-[#AC7E2C] hover:text-white' }}"                        <span class="flex items-center gap-3">
+                        class="w-full flex items-center justify-between px-3 py-2 rounded hover:bg-[#AC7E2C] hover:text-white transition focus:outline-none">
+                        <span class="flex items-center gap-3">
                             <i class="fas {{ $menu['icon'] }}"></i> {{ $title }}
                         </span>
                         <i class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
@@ -196,8 +197,7 @@ class="w-full flex items-center justify-between px-3 py-2 rounded transition foc
                         @foreach ($menu['links'] as [$label, $url])
                         <li>
                             <a href="{{ $url }}"
-class="block px-3 py-1.5 rounded transition
-{{ request()->url() == $url ? 'bg-[#AC7E2C] text-white' : 'hover:bg-[#AC7E2C] hover:text-white' }}">
+                                class="block px-3 py-1.5 rounded hover:bg-[#AC7E2C] hover:text-white transition">
                                 {{ $label }}
                             </a>
                         </li>
@@ -208,8 +208,7 @@ class="block px-3 py-1.5 rounded transition
                 {{-- Single Link --}}
                 <li>
                     <a href="{{ $menu['links'][0][1] }}"
-                        class="flex items-center gap-3 px-3 py-2 rounded transition
-{{ request()->url() == $menu['links'][0][1] ? 'bg-[#AC7E2C] text-white' : 'hover:bg-[#AC7E2C] hover:text-white' }}">
+                        class="flex items-center gap-3 px-3 py-2 rounded hover:bg-[#AC7E2C] hover:text-white transition">
                         <i class="fas {{ $menu['icon'] }}"></i> {{ $title }}
                     </a>
                 </li>
@@ -220,7 +219,7 @@ class="block px-3 py-1.5 rounded transition
                 {{-- █ Point System --}}
                  @auth('web') 
                 <li>
-                    <a href="{{ route('point-settings.index')}}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-[#AC7E2C] transition">
+                    <a href="{{ route('point-settings.index')}}" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-[#AC7E2C] hover:text-white transition">
                         <i class="fas fa-coins"></i> Point System
                     </a>
                 </li>

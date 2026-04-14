@@ -5,83 +5,77 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="px-6 py-6 w-full">
-
-    <!-- HEADER -->
-    <div class="mb-6">
-        <h2 class="text-2xl font-semibold text-gray-900">Register Channel Partner</h2>
-        <p class="text-sm text-gray-500">Add new partner details</p>
-    </div>
+<section class="px-6 mx-auto mt-10 md:mt-12 max-w-7xl">
 
     <!-- CARD -->
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 md:p-6">
 
-        <form action="{{ route('partner.store') }}" method="POST">
+        <!-- HEADER INSIDE -->
+        <div class="mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">Register Channel Partner</h2>
+            <p class="text-xs text-gray-500">Add new partner details</p>
+        </div>
+
+        <form action="{{ route('partner.store') }}" method="POST" class="space-y-4">
             @csrf
 
             <!-- GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <!-- Partner Name -->
                 <div>
-                    <label class="text-sm text-gray-600">Partner Name</label>
+                    <label class="text-sm text-gray-600 mb-1 block">Partner Name</label>
                     <input type="text" name="partner_name"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#AC7E2C] focus:ring-1 focus:ring-[#AC7E2C]"
-                        placeholder="Enter Partner Name">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
                 </div>
 
                 <!-- Contact -->
                 <div>
-                    <label class="text-sm text-gray-600">Contact Person</label>
+                    <label class="text-sm text-gray-600 mb-1 block">Contact Person</label>
                     <input type="tel" name="number_contact"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#AC7E2C] focus:ring-1 focus:ring-[#AC7E2C]"
-                        placeholder="Enter Contact Number">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
                 </div>
 
                 <!-- Email -->
                 <div>
-                    <label class="text-sm text-gray-600">Email</label>
+                    <label class="text-sm text-gray-600 mb-1 block">Email</label>
                     <input type="email" name="mail_id"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#AC7E2C]"
-                        placeholder="Enter Email">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
                 </div>
 
                 <!-- DOB -->
                 <div>
-                    <label class="text-sm text-gray-600">Date of Birth</label>
+                    <label class="text-sm text-gray-600 mb-1 block">Date of Birth</label>
                     <input type="date" name="date_of_birth"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#AC7E2C]">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
                 </div>
 
                 <!-- Aadhaar -->
                 <div>
-                    <label class="text-sm text-gray-600">Aadhaar Number</label>
+                    <label class="text-sm text-gray-600 mb-1 block">Aadhaar Number</label>
                     <input type="text" name="aadhaar_card"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#AC7E2C]"
-                        placeholder="Enter Aadhaar Number">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
                 </div>
 
                 <!-- PAN -->
                 <div>
-                    <label class="text-sm text-gray-600">PAN Number</label>
+                    <label class="text-sm text-gray-600 mb-1 block">PAN Number</label>
                     <input type="text" name="pan_card"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#AC7E2C]"
-                        placeholder="Enter PAN">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
                 </div>
 
                 <!-- Commission -->
                 <div>
-                    <label class="text-sm text-gray-600">Commission</label>
+                    <label class="text-sm text-gray-600 mb-1 block">Commission</label>
                     <input type="text" name="commission"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#AC7E2C]"
-                        placeholder="e.g. 10% or ₹5000">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
                 </div>
 
                 <!-- Status -->
                 <div>
-                    <label class="text-sm text-gray-600">Status</label>
+                    <label class="text-sm text-gray-600 mb-1 block">Status</label>
                     <select name="status"
-                        class="mt-1 w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white focus:ring-1 focus:ring-[#AC7E2C]">
+                        class="w-full h-11 px-4 rounded-lg border border-gray-300 bg-white focus:ring-1 focus:ring-[#AC7E2C]">
                         <option value="">Select Status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
@@ -91,15 +85,15 @@
             </div>
 
             <!-- BUTTON -->
-            <div class="flex justify-end gap-3 mt-6">
+            <div class="flex justify-end gap-3 pt-2">
 
                 <a href="{{ route('partner.list') }}"
-                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100">
+                    class="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100">
                     Cancel
                 </a>
 
                 <button type="submit"
-                    class="px-6 py-2 rounded-lg bg-[#AC7E2C] text-white hover:bg-[#8C651F]">
+                    class="px-6 py-2.5 text-sm rounded-lg bg-[#AC7E2C] text-white hover:bg-[#8C651F]">
                     Register Partner
                 </button>
 
