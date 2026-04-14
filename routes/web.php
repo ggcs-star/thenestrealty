@@ -84,6 +84,11 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/commissions/{id}/download', [CommissionController::class, 'download'])
     ->name('commissions.download');
+
+    Route::get('/commission-report', [CommissionController::class, 'report'])
+    ->name('report.commissions');
+    Route::get('/partner/{id}/commission', [CommissionController::class, 'partnerReport'])
+    ->name('partner.commission.report');
     Route::patch('/commissions/{id}/status', [CommissionController::class, 'updateStatus'])
     ->name('commissions.status.update');
     Route::post('/commissions/{id}/paid', [CommissionController::class, 'markAsPaid'])->name('commissions.markAsPaid');
