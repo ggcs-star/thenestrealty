@@ -13,12 +13,13 @@ if (!function_exists('getRupeePerPoint')) {
 }
 
 if (!function_exists('amountToPoints')) {
-    function amountToPoints(float $amount): int
+    function amountToPoints(float $amount): float
     {
         $value = getRupeePerPoint();
-        if ($value <= 0) return 0;
-        // use floor to give integer whole points; change to round() if you prefer
-        return (int) floor($amount / $value);
+        if ($value <= 0)
+            return 0;
+
+        return round($amount / $value, 5);
     }
 }
 

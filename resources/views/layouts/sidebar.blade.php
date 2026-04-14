@@ -107,6 +107,14 @@
                 ['Assign Roles', route('employees.assignManager')],
                 ],
                 ],
+                'Reports' => [
+                'id' => 'reportMenu',
+                'icon' => 'fa-building',
+                'links' => [
+                ['Commission Report', route('report.commissions')],
+                
+                ],
+                ],
                 // 'System Settings' => [
                 // 'id' => 'settingsMenu',
                 // 'icon' => 'fa-cogs',

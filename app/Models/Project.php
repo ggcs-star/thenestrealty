@@ -13,6 +13,7 @@ class Project extends Model
         'name',
         'ex_unit',           // Added missing field
         'units',             // Added units array field
+        'unit_sizes',
         'booked_units',      // Added booked units array field
         'address',
         'builder_name',
@@ -30,6 +31,7 @@ class Project extends Model
     protected $casts = [
         'documents' => 'array',  // Automatically handle JSON encoding/decoding
         'units' => 'array',      // Cast units to array
+        'unit_sizes' => 'array',
         'booked_units' => 'array', // Cast booked_units to array
         'ex_unit' => 'integer',  // Ensure ex_unit is always an integer
     ];
@@ -65,7 +67,13 @@ class Project extends Model
         }
         return $value ?: [];
     }
-
+    public function getUnitSizesAttribute($value)
+    {
+        if (is_string($value)) {
+            return json_decode($value, true) ?: [];
+        }
+        return $value ?: [];
+    }
     /**
      * Get the booked units as an array
      * This accessor ensures booked_units is always an array, even if null
@@ -133,7 +141,7 @@ class Project extends Model
         if (empty($this->units)) {
             return 'No units extracted';
         }
-        
+
         return implode(', ', $this->units);
     }
 

@@ -79,10 +79,10 @@ class ProjectController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // Debug: Log the incoming request data
-        \Log::info('Project creation request:', $request->all());
+        \Log::info('Creating project', [
+            'name' => $request->name
+        ]);
 
-        // Agar employee login hai to assigned_employee ko force karo
         if (auth('employee')->check()) {
             $request->merge([
                 'assigned_employee' => auth('employee')->id(),
@@ -94,129 +94,106 @@ class ProjectController extends Controller
             'address' => 'required',
             'builder_name' => 'required',
             'builder_number' => 'required',
-            'assigned_employee' => 'required|exists:employees,id', // Validate employee ID exists
+            'assigned_employee' => 'required|exists:employees,id',
             'documents.*' => 'file|mimes:xlsx,xls|max:2048',
         ]);
 
-        // Debug: Log validation passed
-        \Log::info('Validation passed, processing project creation');
-
         $unitCount = 0;
-        $units = []; // Array to store individual units
+        $units = [];
+        $unitSizes = [];
         $documentPaths = [];
 
         if ($request->hasFile('documents')) {
+
             foreach ($request->file('documents') as $file) {
+
                 $path = $file->store('documents', 'public');
                 $documentPaths[] = $path;
 
                 try {
-                    $filePath = $file->getRealPath();
-                    \Log::info('Processing file:', ['path' => $filePath, 'original_name' => $file->getClientOriginalName()]);
 
-                    $spreadsheet = IOFactory::load($filePath);
+                    $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
                     $sheet = $spreadsheet->getActiveSheet();
 
                     $highestRow = $sheet->getHighestRow();
                     $highestColumn = $sheet->getHighestColumn();
 
-                    \Log::info('Spreadsheet info:', [
-                        'highest_row' => $highestRow,
-                        'highest_column' => $highestColumn,
-                        'sheet_name' => $sheet->getTitle()
-                    ]);
-
-                    if ($highestRow < 1) {
-                        \Log::warning("Spreadsheet appears to be empty - no rows found.");
-                        continue;
-                    }
-
-                    $headerRow = $sheet->rangeToArray('A1:' . $highestColumn . '1', null, true, false)[0];
-                    \Log::info('RAW Header Row:', $headerRow);
-
-                    $headers = array_map(function ($h) {
-                        return strtolower(trim(strval($h ?? '')));
-                    }, $headerRow);
-
-                    \Log::info('Normalized Headers:', $headers);
+                    $headers = array_map(
+                        fn($h) => strtolower(trim($h)),
+                        $sheet->rangeToArray('A1:' . $highestColumn . '1')[0]
+                    );
 
                     $unitColumnIndex = null;
-                    $possibleUnitHeaders = ['unit', 'units', 'unit no', 'unit_no', 'unitno', 'unit number', 'unit_number'];
-
-                    foreach ($possibleUnitHeaders as $possibleHeader) {
-                        $index = array_search($possibleHeader, $headers);
-                        if ($index !== false) {
-                            $unitColumnIndex = $index;
-                            \Log::info("Found unit column at index $index with header: $possibleHeader");
+                    foreach (['unit', 'units', 'unit no', 'unit number'] as $h) {
+                        $i = array_search($h, $headers);
+                        if ($i !== false) {
+                            $unitColumnIndex = $i;
                             break;
                         }
                     }
 
-                    if ($unitColumnIndex === null) {
-                        \Log::warning("Unit column not found. Available headers:", $headers);
-                        continue;
-                    }
-
-                    $unitColumnLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($unitColumnIndex + 1);
-
-                    if ($highestRow > 1) {
-                        $unitColumnData = $sheet->rangeToArray($unitColumnLetter . '2:' . $unitColumnLetter . $highestRow, null, true, false);
-
-                        \Log::info("Unit column data extracted:", ['column' => $unitColumnLetter, 'rows' => count($unitColumnData)]);
-
-                        foreach ($unitColumnData as $rowIndex => $rowData) {
-                            $cellValue = $rowData[0] ?? '';
-                            $actualRowNumber = $rowIndex + 2;
-
-                            \Log::info("Row $actualRowNumber Unit Value:", [
-                                'raw_value' => $cellValue,
-                                'type' => gettype($cellValue),
-                                'trimmed' => trim(strval($cellValue)),
-                                'empty_check' => empty(trim(strval($cellValue)))
-                            ]);
-
-                            $stringValue = trim(strval($cellValue));
-                            if ($stringValue !== '' && $stringValue !== '0' && !is_null($cellValue)) {
-                                $unitCount++;
-                                // Add the unit to the units array
-                                $units[] = $stringValue;
-                            }
+                    $sizeColumnIndex = null;
+                    foreach (['size', 'unit size', 'area'] as $h) {
+                        $i = array_search($h, $headers);
+                        if ($i !== false) {
+                            $sizeColumnIndex = $i;
+                            break;
                         }
                     }
 
-                    \Log::info("Total units found in this file: $unitCount");
-                    \Log::info("Units array:", $units);
+                    if ($unitColumnIndex === null)
+                        continue;
 
-                } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
-                    \Log::error("PhpSpreadsheet Error: " . $e->getMessage());
-                    return back()->with('error', 'Excel processing error: ' . $e->getMessage());
+                    $unitCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($unitColumnIndex + 1);
+                    $sizeCol = $sizeColumnIndex !== null
+                        ? \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($sizeColumnIndex + 1)
+                        : null;
+
+                    for ($row = 2; $row <= $highestRow; $row++) {
+
+                        $unitValue = trim((string) $sheet->getCell($unitCol . $row)->getValue());
+                        if ($unitValue === '')
+                            continue;
+
+                        $unitCount++;
+                        $units[] = $unitValue;
+
+                        if ($sizeCol) {
+                            $unitSizes[$unitValue] = trim((string) $sheet->getCell($sizeCol . $row)->getValue());
+                        }
+                    }
+
                 } catch (\Exception $e) {
-                    \Log::error("General Excel Parse Error: " . $e->getMessage());
-                    return back()->with('error', 'Excel error: ' . $e->getMessage());
+                    \Log::error("Excel Error: " . $e->getMessage());
+                    return back()->with('error', $e->getMessage());
                 }
             }
         }
 
-        // Debug: Log the data being saved
         $projectData = [
             'name' => $request->name,
             'ex_unit' => $unitCount,
-            'units' => $units, // Store the units array
+            'units' => $units,
+            'unit_sizes' => $unitSizes,
             'address' => $request->address,
             'builder_name' => $request->builder_name,
             'builder_number' => $request->builder_number,
-            'assigned_employee' => (int) $request->assigned_employee, // Cast to integer
-            'documents' => $documentPaths, // Use array casting from model
+            'assigned_employee' => (int) $request->assigned_employee,
+            'documents' => $documentPaths,
         ];
 
-        \Log::info('Creating project with data:', $projectData);
+        \App\Models\Project::create($projectData);
 
-        Project::create($projectData);
+        \Log::info('Project created successfully', [
+            'units' => $unitCount
+        ]);
 
-        \Log::info('Project created successfully');
+        return redirect()->route('projects.list')
+            ->with('success', "$unitCount units imported successfully");
 
-        return redirect()->route('projects.list')->with('success', "$unitCount units extracted and project saved.");
     }
+
+
 
 
     public function edit($id): View
@@ -229,7 +206,6 @@ class ProjectController extends Controller
 
     public function update(Request $request, $id): RedirectResponse
     {
-        // Agar employee login hai to assigned_employee ko force karo
         if (auth('employee')->check()) {
             $request->merge([
                 'assigned_employee' => auth('employee')->id(),
@@ -247,11 +223,10 @@ class ProjectController extends Controller
 
         $project = Project::findOrFail($id);
 
-        $unitCount = $project->ex_unit ?? 0; // agar purane units already hai
+        $unitCount = $project->ex_unit ?? 0;
         $units = $project->units ?? [];
         $documentPaths = $project->documents ?? [];
 
-        // Agar naye documents upload kiye gaye hain
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
                 $path = $file->store('documents', 'public');
@@ -300,7 +275,6 @@ class ProjectController extends Controller
             }
         }
 
-        // Project update
         $project->update([
             'name' => $request->name,
             'address' => $request->address,

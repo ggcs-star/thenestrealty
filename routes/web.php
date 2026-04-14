@@ -78,6 +78,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/commissions/fetch', [CommissionController::class, 'fetch'])->name('commissions.fetch');
     Route::post('/commissions', [CommissionController::class, 'store'])->name('commissions.store');
     Route::get('/commissions/list', [CommissionController::class, 'list'])->name('commissions.list');
+    Route::get('/commissions/{id}', [CommissionController::class, 'show'])->name('commissions.show');
+    Route::get('/commissions/{id}/invoice', [CommissionController::class, 'invoice'])
+    ->name('commissions.invoice');
+
+Route::get('/commissions/{id}/download', [CommissionController::class, 'download'])
+    ->name('commissions.download');
+
+    Route::get('/commission-report', [CommissionController::class, 'report'])
+    ->name('report.commissions');
+    Route::get('/partner/{id}/commission', [CommissionController::class, 'partnerReport'])
+    ->name('partner.commission.report');
+    Route::patch('/commissions/{id}/status', [CommissionController::class, 'updateStatus'])
+    ->name('commissions.status.update');
     Route::post('/commissions/{id}/paid', [CommissionController::class, 'markAsPaid'])->name('commissions.markAsPaid');
     Route::delete('/commissions/{id}', [CommissionController::class, 'destroy'])->name('commissions.destroy');
     Route::get('/loans', [LoanController::class, 'index'])->name('loan.index');

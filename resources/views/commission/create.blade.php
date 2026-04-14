@@ -129,12 +129,32 @@
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div>
+                        <label for="payment_status" class="block text-sm font-medium text-gray-700">
+                            Payment Status
+                        </label>
+
+                        <select name="payment_status" id="payment_status"
+                            class="w-full px-3 py-2 mt-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:border-blue-300">
+
+                            <option value="pending" {{ old('payment_status') == 'pending' ? 'selected' : '' }}>
+                                Pending
+                            </option>
+
+                            <option value="confirmed" {{ old('payment_status') == 'confirmed' ? 'selected' : '' }}>
+                                Confirmed
+                            </option>
+
+                        </select>
+
+                    </div>
 
                     <div>
                         <button type="submit"
 class="w-full sm:w-auto px-4 py-2 bg-[#AC7E2C] text-white rounded hover:bg-[#8C651F] transition">                            {{ $booking->commission ? 'Update Commission' : 'Save Commission' }}
                         </button>
                     </div>
+
                 </form>
             @endif
 
