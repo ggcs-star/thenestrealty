@@ -48,7 +48,7 @@
                             </td>
                             <td class="px-4 py-2 border text-center">
                                 <a href="#"
-                                   class="inline-block bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded transition">
+                                   class="inline-block bg-[#AC7E2C] hover:bg-[#8C651F] text-white text-xs font-medium px-3 py-1 rounded transition">
                                    Edit
                                 </a>
                             </td>

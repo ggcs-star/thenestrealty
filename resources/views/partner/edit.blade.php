@@ -93,7 +93,7 @@
             <!-- Submit Button -->
             <div class="col-span-1 md:col-span-2 pt-4">
                 <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+                        class="w-full bg-[#AC7E2C] hover:bg-[#8C651F] text-white font-semibold py-2 px-6 rounded-lg transition">
                     Update Partner
                 </button>
             </div>

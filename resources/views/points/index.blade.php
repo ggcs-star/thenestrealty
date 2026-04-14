@@ -41,7 +41,7 @@
             <!-- Submit Button -->
             <div class="flex justify-end mt-4">
                 <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-sm transition-colors">
+                    class="bg-[#AC7E2C] hover:bg-[#8C651F] text-white font-medium py-2 px-4 rounded-md text-sm transition-colors">
                     Save Settings
                 </button>
             </div>

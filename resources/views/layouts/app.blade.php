@@ -59,7 +59,7 @@
         {{-- <main>
             @yield('content')
         </main> --}}
-        <footer class="z-20 bg-black border-t border-gray-200 shadow-inner  w-full ">
+        <!-- <footer class="z-20 bg-black border-t border-gray-200 shadow-inner  w-full ">
             <div
                 class="w-max mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500">
                 <p>&copy; {{ date('Y') }} RealEstate CRM. All rights reserved.</p>
@@ -68,7 +68,7 @@
                     <a href="#" class="hover:text-gray-700 transition">Terms of Service</a>
                 </div>
             </div>
-        </footer>
+        </footer> -->
 
     </div>
     @stack('scripts')

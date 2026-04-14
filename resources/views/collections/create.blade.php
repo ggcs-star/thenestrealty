@@ -129,7 +129,7 @@
 
             <div>
                 <button type="submit"
-                    class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-base font-medium">
+                    class="px-5 py-2 bg-[#AC7E2C] hover:bg-[#8C651F] text-white rounded-md text-base font-medium">
                     Save
                 </button>
             </div>
