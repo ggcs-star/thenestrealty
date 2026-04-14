@@ -5,13 +5,12 @@
 @extends('layouts.app')
 
 @section('content')
-    <section class="w-min-screen p-2 mx-auto mt-10">
-        <div class="bg-white p-8 rounded-xl shadow-md space-y-6">
-            <h2 class="text-2xl font-semibold text-gray-800">Create Booking</h2>
+<section class="px-6 py-6 w-full">
+<div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">            <h2 class="text-2xl font-semibold text-gray-900">Create Booking</h2>
 
             {{-- Display ALL Validation Errors at the top --}}
             @if ($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 rounded relative mb-4" role="alert">
                     <strong class="font-bold">Whoops!</strong>
                     <span class="block sm:inline">There were some problems with your input.</span>
                     <ul class="mt-3 list-disc list-inside">
@@ -24,7 +23,7 @@
 
             {{-- Success Message --}}
             @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <div class="bg-green-50 border border-green-200 rounded-lg text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block sm:inline">{{ session('success') }}</span>
                 </div>
             @endif
