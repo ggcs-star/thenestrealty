@@ -21,3 +21,7 @@ ON DELETE SET NULL;
 
 ALTER TABLE loans 
 DROP COLUMN loan_stage;
+
+
+ALTER TABLE bookings
+MODIFY unit_size INT NULL;

@@ -113,117 +113,141 @@ class LoanController extends Controller
     //     return view('loan.list', compact('loans'));
 // }
 
- public function list(Request $request)
-{
-    $query = Loan::with(['employee', 'stage','booking']);
-
-    if ($request->search) {
-        $query->where(function ($q) use ($request) {
-            $q->where('customer_name', 'like', '%' . $request->search . '%')
-              ->orWhere('booking_id', 'like', '%' . $request->search . '%')
-              ->orWhere('unit_name', 'like', '%' . $request->search . '%')
-              ->orWhere('bank_name', 'like', '%' . $request->search . '%');
-        });
-    }
-    if ($request->filled('stage')) {
-        $query->where('loan_stage_id', $request->stage);
-    }
-
-    $loans = $query->latest()->paginate(10);
-
-    $stages = \App\Models\LoanStage::all();
-
-    return view('loan.list', compact('loans', 'stages'));
-}
-public function edit($id)
-{
-    $loan = Loan::findOrFail($id);
-
-    $customers = Customer::all();
-    $Booking = Booking::all();
-    $Emp = Employee::all();
-    $stages = LoanStage::all();
-
-    return view('loan.edit', compact(
-        'loan',
-        'customers',
-        'Booking',
-        'Emp',
-        'stages'
-    ));
-}
-public function update(Request $request, $id)
-{
-    $loan = Loan::findOrFail($id);
-
-    $validated = $request->validate([
-        'customer_id' => 'required|exists:customers,id',
-        'booking_id' => 'required|exists:bookings,id',
-        'bank_name' => 'nullable|string',
-        'loan_amount' => 'required|numeric',
-        'loan_stage_id' => 'required|exists:loan_stages,id',
-        'notes' => 'nullable|string',
-    ]);
-
-    $customer = Customer::find($request->customer_id);
-    $booking = Booking::find($request->booking_id);
-
-    $loan->update([
-        'customer_name' => $customer->name ?? 'Unknown',
-        'booking_id' => $booking->id,
-        'unit_name' => $booking->unit_name ?? 'Default Display',
-        'bank_name' => $request->bank_name,
-        'loan_amount' => $request->loan_amount,
-        'loan_stage_id' => $request->loan_stage_id,
-        'notes' => $request->notes,
-    ]);
-
-    return redirect()->route('loan.list')->with('success', 'Loan updated successfully');
-}
-    public function reports(Request $request)
+    public function list(Request $request)
     {
-        $query = Loan::with('employee')
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $search = $request->search;
-                $q->where(function ($subQ) use ($search) {
-                    $subQ->where('customer_name', 'like', "%$search%")
-                        ->orWhere('bank_name', 'like', "%$search%")
-                        ->orWhere('unit_name', 'like', "%$search%");
-                });
-            })
-            ->when($request->filled('stage'), function ($q) use ($request) {
-                $q->where('loan_stage', $request->stage);
-            })
-            ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
-                $q->whereBetween('created_at', [$request->from_date, $request->to_date]);
-            });
+        $query = Loan::with(['employee', 'stage', 'booking']);
 
-        $filteredQuery = clone $query;
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('customer_name', 'like', '%' . $request->search . '%')
+                    ->orWhere('booking_id', 'like', '%' . $request->search . '%')
+                    ->orWhere('unit_name', 'like', '%' . $request->search . '%')
+                    ->orWhere('bank_name', 'like', '%' . $request->search . '%');
+            });
+        }
+        if ($request->filled('stage')) {
+            $query->where('loan_stage_id', $request->stage);
+        }
 
         $loans = $query->latest()->paginate(10);
 
-        $total = $filteredQuery->count();
-        $approved = (clone $filteredQuery)->where('loan_stage', 'approved')->count();
-        $pending = (clone $filteredQuery)->where('loan_stage', 'pending')->count();
-        $rejected = (clone $filteredQuery)->where('loan_stage', 'rejected')->count();
+        $stages = \App\Models\LoanStage::all();
 
-        return view('reports.loan', compact('loans', 'total', 'approved', 'pending', 'rejected'));
+        return view('loan.list', compact('loans', 'stages'));
     }
+    public function edit($id)
+    {
+        $loan = Loan::findOrFail($id);
+
+        $customers = Customer::all();
+        $Booking = Booking::all();
+        $Emp = Employee::all();
+        $stages = LoanStage::all();
+
+        return view('loan.edit', compact(
+            'loan',
+            'customers',
+            'Booking',
+            'Emp',
+            'stages'
+        ));
+    }
+    public function update(Request $request, $id)
+    {
+        $loan = Loan::findOrFail($id);
+
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'booking_id' => 'required|exists:bookings,id',
+            'bank_name' => 'nullable|string',
+            'loan_amount' => 'required|numeric',
+            'loan_stage_id' => 'required|exists:loan_stages,id',
+            'notes' => 'nullable|string',
+        ]);
+
+        $customer = Customer::find($request->customer_id);
+        $booking = Booking::find($request->booking_id);
+
+        $loan->update([
+            'customer_name' => $customer->name ?? 'Unknown',
+            'booking_id' => $booking->id,
+            'unit_name' => $booking->unit_name ?? 'Default Display',
+            'bank_name' => $request->bank_name,
+            'loan_amount' => $request->loan_amount,
+            'loan_stage_id' => $request->loan_stage_id,
+            'notes' => $request->notes,
+        ]);
+
+        return redirect()->route('loan.list')->with('success', 'Loan updated successfully');
+    }
+public function reports(Request $request)
+{
+    $query = Loan::with(['employee', 'stage'])
+
+        ->when($request->filled('search'), function ($q) use ($request) {
+            $search = $request->search;
+
+            $q->where(function ($subQ) use ($search) {
+                $subQ->where('customer_name', 'like', "%$search%")
+                    ->orWhere('bank_name', 'like', "%$search%")
+                    ->orWhere('unit_name', 'like', "%$search%");
+            });
+        })
+
+        ->when($request->filled('stage'), function ($q) use ($request) {
+            $q->where('loan_stage_id', $request->stage);
+        })
+
+        ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
+            $q->whereBetween('created_at', [
+                $request->from_date . ' 00:00:00',
+                $request->to_date . ' 23:59:59'
+            ]);
+        });
+
+    $filteredQuery = clone $query;
+
+    $loans = $query->latest()->paginate(10)->withQueryString();
+
+    $total = $filteredQuery->count();
+    $totalAmount = (clone $filteredQuery)->sum('loan_amount');
+
+    $stageCounts = LoanStage::orderBy('name')->get()->map(function ($stage) use ($filteredQuery, $total) {
+
+        $count = (clone $filteredQuery)->where('loan_stage_id', $stage->id)->count();
+        $amount = (clone $filteredQuery)->where('loan_stage_id', $stage->id)->sum('loan_amount');
+
+        return [
+            'id' => $stage->id,
+            'name' => $stage->name,
+            'count' => $count,
+            'amount' => $amount,
+            'percentage' => $total > 0 ? round(($count / $total) * 100, 1) : 0
+        ];
+    });
+
+    return view('reports.loan', compact(
+        'loans',
+        'total',
+        'totalAmount',
+        'stageCounts'
+    ));
+}
 
     public function updateStage(Request $request, $id)
-{
-    $request->validate([
-        'loan_stage_id' => 'required|exists:loan_stages,id'
-    ]);
+    {
+        $request->validate([
+            'loan_stage_id' => 'required|exists:loan_stages,id'
+        ]);
 
-    $loan = Loan::findOrFail($id);
+        $loan = Loan::findOrFail($id);
 
-    $loan->update([
-        'loan_stage_id' => $request->loan_stage_id
-    ]);
+        $loan->update([
+            'loan_stage_id' => $request->loan_stage_id
+        ]);
 
-    return back()->with('success', 'Stage updated successfully');
-}
+        return back()->with('success', 'Stage updated successfully');
+    }
 }
 
 

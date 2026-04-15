@@ -151,7 +151,8 @@
                                             No</th>
                                         <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Tower
                                         </th>
-
+                                        <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Size
+                                        </th>
                                         <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Status
                                         </th>
                                     </tr>
@@ -161,6 +162,7 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="py-3 px-3 font-medium text-gray-900">{{ $unit['unit_no'] }}</td>
                                             <td class="py-3 px-3 text-gray-600">{{ $unit['tower'] }}</td>
+                                            <td class="py-3 px-3 text-gray-600">{{ $unit['size'] }}</td>
 
                                             <td class="py-3 px-3">
                                                 <span
@@ -191,6 +193,12 @@
                                             No</th>
                                         <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Tower
                                         </th>
+                                        <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Size
+                                        </th>
+                                         <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Booking id
+                                        </th>
+                                        <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Customer
+                                        </th>
                                         <th class="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">Status
                                         </th>
                                     </tr>
@@ -200,6 +208,9 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="py-3 px-3 font-medium text-gray-900">{{ $unit['unit_no'] }}</td>
                                             <td class="py-3 px-3 text-gray-600">{{ $unit['tower'] }}</td>
+                                            <td class="py-3 px-3 text-gray-600">{{ $unit['size'] }}</td>
+                                            <td class="py-3 px-3 text-gray-600">{{ $unit['booking_id'] }}</td>
+                                            <td class="py-3 px-3 text-gray-600">{{ $unit['customer'] }}</td>
                                             <td class="py-3 px-3">
                                                 <span
                                                     class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
