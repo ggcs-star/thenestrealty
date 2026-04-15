@@ -45,7 +45,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-gradient-to-br from-[#AA7F2A] to-[#8E6A22] rounded-xl shadow-lg text-white p-4">
                 <p class="text-amber-100 text-xs mb-1">Total Commission</p>
-                <h3 class="text-xl font-bold">₹ {{ number_format($totalCommission) }}</h3>
+                <h3 class="text-xl font-bold">₹ {{ amountToPoints($totalCommission) }}</h3>
             </div>
             <div class="bg-gradient-to-br from-[#C49A3F] to-[#AA7F2A] rounded-xl shadow-lg text-white p-4">
                 <p class="text-amber-100 text-xs mb-1">Partners</p>
@@ -53,11 +53,11 @@
             </div>
             <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-xl shadow-lg text-white p-4">
                 <p class="text-green-100 text-xs mb-1">Paid</p>
-                <h3 class="text-xl font-bold">₹ {{ number_format($paid) }}</h3>
+                <h3 class="text-xl font-bold">₹ {{ amountToPoints($paid) }}</h3>
             </div>
             <div class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl shadow-lg text-white p-4">
                 <p class="text-orange-100 text-xs mb-1">Pending</p>
-                <h3 class="text-xl font-bold">₹ {{ number_format($pending) }}</h3>
+                <h3 class="text-xl font-bold">₹ {{ amountToPoints($pending) }}</h3>
             </div>
         </div>
 
@@ -181,17 +181,17 @@
                                 </div>
                             </div>
                             <div class="bg-[#AA7F2A] text-white px-3 py-1.5 rounded-lg">
-                                <span class="font-bold text-sm">₹ {{ number_format($partnerData['total']) }}</span>
+                                <span class="font-bold text-sm">₹ {{ amountToPoints($partnerData['total']) }}</span>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2 mt-3">
                             <div class="bg-green-50 rounded p-1.5 text-center">
                                 <p class="text-xs text-green-600">Paid</p>
-                                <p class="text-sm font-bold text-green-700">₹ {{ number_format($partnerData['paid']) }}</p>
+                                <p class="text-sm font-bold text-green-700">₹ {{ amountToPoints($partnerData['paid']) }}</p>
                             </div>
                             <div class="bg-yellow-50 rounded p-1.5 text-center">
                                 <p class="text-xs text-yellow-600">Pending</p>
-                                <p class="text-sm font-bold text-yellow-700">₹ {{ number_format($partnerData['pending']) }}</p>
+                                <p class="text-sm font-bold text-yellow-700">₹ {{ amountToPoints($partnerData['pending']) }}</p>
                             </div>
                             <div class="bg-blue-50 rounded p-1.5 text-center">
                                 <p class="text-xs text-blue-600">Projects</p>
@@ -217,7 +217,7 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <span class="text-sm font-bold text-[#AA7F2A]">₹
-                                            {{ number_format($projectData['total']) }}</span>
+                                            {{ amountToPoints($projectData['total']) }}</span>
                                         <svg class="w-4 h-4 transform transition-transform text-gray-500" fill="none"
                                             stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -248,7 +248,7 @@
                                                 </span>
                                             </div>
                                             <span class="font-semibold text-sm text-[#AA7F2A]">₹
-                                                {{ number_format($item->amount) }}</span>
+                                                {{ amountToPoints($item->amount) }}</span>
                                         </div>
                                     @endforeach
                                 </div>
@@ -303,7 +303,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-gray-50 p-3 rounded-lg text-center">
                         <p class="text-xs text-gray-600">Total</p>
-                        <p class="text-xl font-bold text-[#AA7F2A]">₹ {{ number_format($totalCommission) }}</p>
+                        <p class="text-xl font-bold text-[#AA7F2A]">₹ {{ amountToPoints($totalCommission) }}</p>
                     </div>
                     <div class="bg-gray-50 p-3 rounded-lg text-center">
                         <p class="text-xs text-gray-600">Partners</p>
@@ -311,13 +311,13 @@
                     </div>
                     <div class="bg-gray-50 p-3 rounded-lg text-center">
                         <p class="text-xs text-gray-600">Paid</p>
-                        <p class="text-xl font-bold text-green-600">₹ {{ number_format($paid) }}</p>
+                        <p class="text-xl font-bold text-green-600">₹ {{ amountToPoints($paid) }}</p>
                         <p class="text-xs text-gray-500">
                             {{ $totalCommission > 0 ? round(($paid / $totalCommission) * 100) : 0 }}%</p>
                     </div>
                     <div class="bg-gray-50 p-3 rounded-lg text-center">
                         <p class="text-xs text-gray-600">Pending</p>
-                        <p class="text-xl font-bold text-orange-600">₹ {{ number_format($pending) }}</p>
+                        <p class="text-xl font-bold text-orange-600">₹ {{ amountToPoints($pending) }}</p>
                         <p class="text-xs text-gray-500">
                             {{ $totalCommission > 0 ? round(($pending / $totalCommission) * 100) : 0 }}%</p>
                     </div>

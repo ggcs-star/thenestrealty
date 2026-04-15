@@ -69,7 +69,7 @@ class="inline-flex items-center justify-center gap-2 bg-[#AC7E2C] text-white px-
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500">Total Value</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-1">${{ number_format($projects->sum('value') ?? 0) }}</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">${{ amountToPoints($projects->sum('value') ?? 0) }}</p>
                 </div>
                 <div class="bg-orange-50 rounded-lg p-3">
                     <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

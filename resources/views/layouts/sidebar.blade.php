@@ -80,6 +80,7 @@
                 'links' => [
                 ['Create Loan', route('loan.create')],
                 ['Loan Tracking', route('loan.list')],
+                ['Loan Stages', route('loan-stages.index')],
                 ],
                 ],
                 'Collection System' => [
@@ -112,7 +113,7 @@
                 'icon' => 'fa-building',
                 'links' => [
                 ['Commission Report', route('report.commissions')],
-                
+                ['Loan Report', route('loan.reports')],
                 ],
                 ],
                 // 'System Settings' => [
@@ -127,7 +128,7 @@
 
                 ];
                 $employeeItems = [
-                'Dashboard' => ['icon' => 'fa-tachometer-alt', 'links' => [['Dashboard', route('employee.dashboard')]]],
+                'Dashboard' => ['icon' => 'fa-tachometer-alt', 'links' => [['Dashboard', route('dashboard')]]],
                 'Project Management' => [
                 'id' => 'projectMenu',
                 'icon' => 'fa-building',
@@ -238,9 +239,9 @@
     </aside>
 
     {{-- Main Content Wrapper --}}
-    <div class="md:ml-64 mt-[85px] h-[calc(100vh-70px)] overflow-y-auto ml-16 md:ml-64">
+    {{-- <div class="md:ml-64 mt-[85px] h-[calc(100vh-70px)] overflow-y-auto ml-16 md:ml-64">
         @yield('content')
-    </div>
+    </div> --}}
 
     {{-- ░░░ 4. JS SCRIPT ░░░ --}}
     <script>

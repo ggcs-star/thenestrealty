@@ -58,7 +58,7 @@ $hideDashboard = false;
                 <td class="px-4 py-2 border">Commission for Booking</td>
                 <td class="px-4 py-2 border">{{ $commission->unit_name }}</td>
                 <td class="px-4 py-2 border text-right">
-                    ₹ {{ number_format($commission->total_amount, 2) }}
+                    ₹ {{ amountToPoints($commission->total_amount, 2) }}
                 </td>
             </tr>
 
@@ -71,7 +71,7 @@ $hideDashboard = false;
             <tr class="bg-gray-50 font-semibold">
                 <td colspan="2" class="px-4 py-2 border text-right">Total Commission</td>
                 <td class="px-4 py-2 border text-right text-green-600">
-                    ₹ {{ number_format($commission->amount, 2) }}
+                    ₹ {{ amountToPoints($commission->amount, 2) }}
                 </td>
             </tr>
         </tbody>

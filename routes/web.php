@@ -14,6 +14,7 @@ use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\EmployeeAuthController;
 use App\Http\Controllers\PointSettingController;
+use App\Http\Controllers\LoanStageController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -30,9 +31,7 @@ Route::get('/', function () {
 });
 
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -79,21 +78,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/commissions', [CommissionController::class, 'store'])->name('commissions.store');
     Route::get('/commissions/list', [CommissionController::class, 'list'])->name('commissions.list');
     Route::get('/commissions/{id}', [CommissionController::class, 'show'])->name('commissions.show');
-    Route::get('/commissions/{id}/invoice', [CommissionController::class, 'invoice'])
-    ->name('commissions.invoice');
-
-Route::get('/commissions/{id}/download', [CommissionController::class, 'download'])
-    ->name('commissions.download');
-
-    Route::get('/commission-report', [CommissionController::class, 'report'])
-    ->name('report.commissions');
-    Route::get('/partner/{id}/commission', [CommissionController::class, 'partnerReport'])
-    ->name('partner.commission.report');
-    Route::patch('/commissions/{id}/status', [CommissionController::class, 'updateStatus'])
-    ->name('commissions.status.update');
+    Route::get('/commissions/{id}/invoice', [CommissionController::class, 'invoice'])->name('commissions.invoice');
+    Route::get('/commissions/{id}/download', [CommissionController::class, 'download'])->name('commissions.download');
+    Route::get('/commission-report', [CommissionController::class, 'report'])->name('report.commissions');
+    Route::get('/partner/{id}/commission', [CommissionController::class, 'partnerReport'])->name('partner.commission.report');
+    Route::patch('/commissions/{id}/status', [CommissionController::class, 'updateStatus'])->name('commissions.status.update');
     Route::post('/commissions/{id}/paid', [CommissionController::class, 'markAsPaid'])->name('commissions.markAsPaid');
     Route::delete('/commissions/{id}', [CommissionController::class, 'destroy'])->name('commissions.destroy');
     Route::get('/loans', [LoanController::class, 'index'])->name('loan.index');
+
     Route::get('/collections/test', [CollectionController::class, 'test'])->name('collections.test');
     Route::get('/collections', [CollectionController::class, 'index'])->name('collections.index');
     Route::get('/collections/filter/{filter}', [CollectionController::class, 'filter'])->name('collections.filter');
@@ -196,16 +189,25 @@ Route::middleware(['multi-auth:web,employee'])->group(function () {
     Route::get('/loan', [LoanController::class, 'index'])->name('loan.create');
     Route::get('/track-loan', [LoanController::class, 'list'])->name('loan.list');
     Route::post('/loans', [LoanController::class, 'store'])->name('loan.store');
-
-
+    Route::get('/loan-reports', [LoanController::class, 'reports'])->name('loan.reports');
+    Route::get('/loan/{id}/edit', [LoanController::class, 'edit'])->name('loan.edit');
+    Route::post('/loan/{id}/update', [LoanController::class, 'update'])->name('loan.update');
     Route::get('/create-collection', [CollectionController::class, 'create'])->name('create-collection');
     Route::get('/collections/list', [CollectionController::class, 'listCollections'])->name('collections.list');
     Route::post('/collections', [CollectionController::class, 'store'])->name('collections.store');
 
 
     Route::get('/generate-document', [DocumentController::class, 'index'])->name('document.create');
-    Route::get('/template', [DocumentController::class, 'template'])->name('document.template');
 
+    Route::get('/template', [DocumentController::class, 'template'])->name('document.template');
+    Route::get('/loan-stages', [LoanStageController::class, 'index'])->name('loan-stages.index');
+    Route::get('/loan-stages/create', [LoanStageController::class, 'create'])->name('loan-stages.create');
+    Route::post('/loan-stages', [LoanStageController::class, 'store'])->name('loan-stages.store');
+    Route::get('/loan-stages/{id}/edit', [LoanStageController::class, 'edit'])->name('loan-stages.edit');
+    Route::put('/loan-stages/{id}', [LoanStageController::class, 'update'])->name('loan-stages.update');
+    Route::delete('/loan-stages/{id}', [LoanStageController::class, 'destroy'])->name('loan-stages.destroy');
+    Route::post('/loan/update-stage/{id}', [LoanController::class, 'updateStage'])->name('loan.updateStage');
+   Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 
