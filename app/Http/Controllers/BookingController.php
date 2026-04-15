@@ -32,12 +32,13 @@ class BookingController extends Controller
      */
     public function store(Request $request): RedirectResponse
 {
+    // dd($request->all()); // Debugging line to check incoming data
     $validated = $request->validate([
         'customer_id'       => 'required|exists:customers,id',
         'project_id'        => 'required|exists:projects,id',
         'referred_by'       => 'required|exists:partners,id',
         'unit_name'         => 'required|regex:/^[A-Z][A-Z0-9]?\s\d+$/',
-        'unit_size'         => 'required|numeric',
+        'unit_size'         => 'nullable|numeric',
         'unit_unit'         => 'required|in:Sq. Feet,Sq. Yard',
         'booking_date'      => 'required|date',
         'followup_date'     => 'date',
