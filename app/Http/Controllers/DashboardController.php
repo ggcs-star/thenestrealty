@@ -10,7 +10,7 @@ use App\Models\Commission;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-
+use App\Models\Customer;
 class DashboardController extends Controller
 {
     public function index()
@@ -19,73 +19,58 @@ class DashboardController extends Controller
         $employeeId = auth('employee')->id();
         $isEmployee = auth('employee')->check();
 
+        $projectQuery = Project::query();
+        $bookingQuery = Booking::query();
+        $collectionQuery = Collection::query();
+
         if ($isEmployee) {
-            $totalPartners = ChannelPartner::where('employee_id', $employeeId)->count();
-            $totalProject = Project::where('assigned_employee', $employeeId)->count();
-            $totalBooking = Booking::where('employee_id', $employeeId)->count();
-            $totalCollection = Collection::where('employee_id', $employeeId)->count();
-            $totalCommission = Commission::whereHas('booking', function ($q) use ($employeeId) {
+            $projectQuery->where('assigned_employee', $employeeId);
+            $bookingQuery->where('employee_id', $employeeId);
+            $collectionQuery->where('employee_id', $employeeId);
+        }
+
+        $totalPartners = $isEmployee
+            ? ChannelPartner::where('employee_id', $employeeId)->count()
+            : ChannelPartner::count();
+
+        $totalProject = $projectQuery->count();
+        $totalBooking = $bookingQuery->count();
+        $totalCollection = $collectionQuery->count();
+
+        $totalCommission = Commission::whereHas('booking', function ($q) use ($employeeId, $isEmployee) {
+            if ($isEmployee) {
                 $q->where('employee_id', $employeeId);
-            })->count();
-            $totalEmployees = 1;
+            }
+        })->count();
 
-            $allFollowUps = Collection::with('booking')
-                ->whereHas('booking', function ($q) use ($employeeId) {
-                    $q->where('employee_id', $employeeId);
-                })
-                ->orderBy('date', 'desc')
-                ->get();
+        $totalEmployees = $isEmployee ? 1 : Employee::count();
 
-            $projects = Project::where('assigned_employee', $employeeId)->get();
-        } else {
-            $totalPartners = ChannelPartner::count();
-            $totalProject = Project::count();
-            $totalBooking = Booking::count();
-            $totalCollection = Collection::count();
-            $totalCommission = Commission::count();
-            $totalEmployees = Employee::count();
+        $allFollowUps = $collectionQuery->with('booking')
+            ->latest('date')
+            ->get();
 
-            $allFollowUps = Collection::with('booking')
-                ->orderBy('date', 'desc')
-                ->get();
+        $todayFollowUps = $allFollowUps->where('date', $today)->take(3);
+        $historyFollowUps = $allFollowUps->where('date', '<', $today)->take(3);
+        $recentFollowUps = $allFollowUps->take(3);
+        $completeFollowUps = $allFollowUps->where('status', 'completed')->take(3);
 
-            $projects = Project::all();
-        }
+        $projects = $projectQuery->get();
 
-        $todayFollowUps = $allFollowUps
-            ->filter(fn($item) => Carbon::parse($item->date)->isSameDay($today))
-            ->take(3);
+        $totalUnits = $projects->sum(fn($p) => count($p->units ?? []));
+        $bookedUnits = $projects->sum(fn($p) => count($p->booked_units ?? []));
+        $availableUnits = $projects->sum(fn($p) => count($p->available_units ?? []));
 
-        $historyFollowUps = $allFollowUps
-            ->filter(fn($item) => Carbon::parse($item->date)->lt($today))
-            ->take(3);
+        $availableUnitsTable = $projects
+            ->sortByDesc('created_at')
+            ->flatMap(function ($p) {
 
-        $recentFollowUps = $allFollowUps
-            ->filter(fn($item) => Carbon::parse($item->date)->gt($today))
-            ->take(3);
+                $unitSizes = $p->unit_sizes ?? [];
 
-        $completeFollowUps = $allFollowUps
-            ->filter(fn($item) => $item->status === 'completed')
-            ->take(3);
-
-        $totalUnits = 0;
-        $bookedUnits = 0;
-        $availableUnits = 0;
-
-        foreach ($projects as $project) {
-            $totalUnits += count($project->units ?? []);
-            $bookedUnits += count($project->booked_units ?? []);
-            $availableUnits += count($project->available_units ?? []);
-        }
-
-
-
-        $availableUnitsTable = collect($projects)
-            ->flatMap(function ($project) {
-                return collect($project->available_units)->map(function ($unit) use ($project) {
+                return collect($p->available_units)->map(function ($unit) use ($p, $unitSizes) {
                     return [
                         'unit_no' => $unit,
-                        'tower' => $project->name ?? 'N/A',
+                        'tower' => $p->name ?? 'N/A',
+                        'size' => $unitSizes[$unit] ?? 'N/A',
                         'status' => 'Available'
                     ];
                 });
@@ -93,29 +78,30 @@ class DashboardController extends Controller
             ->take(5)
             ->values();
 
-        $availableUnitsTable = collect($availableUnitsTable)->take(5);
-        $bookedUnitsTable = collect($projects)
-            ->flatMap(function ($project) {
-                return collect($project->booked_units)->map(function ($unit) use ($project) {
-                    return [
-                        'unit_no' => $unit,
-                        'tower' => $project->name ?? 'N/A',
-                        'status' => 'Booked'
-                    ];
-                });
-            })
+        $bookedUnitsTable = Booking::with(['customer', 'project'])
+            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->latest()
             ->take(5)
-            ->values();
-        $bookedUnitsTable = collect($bookedUnitsTable)->take(5);
+            ->get()
+            ->map(function ($b) {
 
 
-        if ($isEmployee) {
-            $customers = \App\Models\Customer::where('employee_id', $employeeId)
-                ->with(['bookings', 'collections'])
-                ->get();
-        } else {
-            $customers = \App\Models\Customer::with(['bookings', 'collections'])->get();
-        }
+                return [
+                    'unit_no' => $b->unit_name,
+
+                    'tower' => $b->project->name ?? 'N/A',
+                    'customer' => $b->customer->name ?? 'N/A',
+                    'booking_id' => $b->booking_id ?? 'N/A',
+                    'size' => ($b->unit_size && $b->unit_unit)
+                        ? $b->unit_size . ' ' . $b->unit_unit
+                        : 'N/A',
+                    'status' => 'Booked'
+                ];
+            });
+
+        $customers = $isEmployee
+            ? Customer::where('employee_id', $employeeId)->with(['bookings', 'collections'])->latest()->get()
+            : Customer::with(['bookings', 'collections'])->latest()->get();
 
         $totalCustomers = $customers->count();
         $totalCustomerBookings = $customers->sum(fn($c) => $c->bookings->count());
@@ -124,41 +110,29 @@ class DashboardController extends Controller
         $activeCustomers = $customers->filter(fn($c) => $c->bookings->count() > 0)->count();
         $inactiveCustomers = $totalCustomers - $activeCustomers;
 
-        $customerBookingValue = $customers->map(function ($c) {
-            return [
-                'name' => $c->name,
-                'total' => $c->bookings->sum('total_amount')
-            ];
-        })->take(5);
+        $bookingReport = Booking::with('customer')
+            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn($b) => [
+                'customer' => $b->customer->name ?? 'N/A',
+                'booking_id' => $b->booking_id,
+                'unit' => $b->unit_name,
+                'amount' => $b->total_amount,
+                'status' => $b->status
+            ]);
 
-        $customerPayments = $customers->map(function ($c) {
-            return [
-                'name' => $c->name,
-                'total' => $c->collections->sum('amount')
-            ];
-        })->take(5);
-
-        $bookingReport = $customers->flatMap(function ($c) {
-            return $c->bookings->map(function ($b) use ($c) {
-                return [
-                    'customer' => $c->name,
-                    'booking_id' => $b->booking_id,
-                    'unit' => $b->unit_name,
-                    'amount' => $b->total_amount,
-                    'status' => $b->status
-                ];
-            });
-        })->take(5);
-
-        $paymentReport = $customers->flatMap(function ($c) {
-            return $c->collections->map(function ($col) use ($c) {
-                return [
-                    'customer' => $c->name,
-                    'amount' => $col->amount,
-                    'date' => $col->date ?? '-'
-                ];
-            });
-        })->take(5);
+        $paymentReport = Collection::with('customer')
+            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->latest('date')
+            ->take(5)
+            ->get()
+            ->map(fn($c) => [
+                'customer' => $c->customer->name ?? 'N/A',
+                'amount' => $c->amount,
+                'date' => $c->date
+            ]);
 
         $receivableReport = $customers->map(function ($c) {
             $total = $c->bookings->sum('total_amount');
@@ -170,34 +144,22 @@ class DashboardController extends Controller
                 'paid' => $paid,
                 'due' => $total - $paid
             ];
-        })->take(5);
+        })->sortByDesc('due')->take(5);
 
+        $cancellationUnitsTable = Booking::with(['project', 'customer'])
+            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->where('status', 'cancelled')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn($b) => [
+                'unit_no' => $b->unit_name,
+                'project' => $b->project->name ?? 'N/A',
+                'customer' => $b->customer->name ?? 'N/A',
+                'date' => $b->booking_date,
+                'status' => 'Cancelled'
+            ]);
 
-if ($isEmployee) {
-    $cancelledBookings = Booking::where('employee_id', $employeeId)
-        ->where('status', 'cancelled')
-        ->with('project')
-        ->latest()
-        ->take(5)
-        ->get();
-} else {
-    $cancelledBookings = Booking::where('status', 'cancelled')
-        ->with('project')
-        ->latest()
-        ->take(5)
-        ->get();
-}
-
-$cancellationUnitsTable = $cancelledBookings->map(function ($b) {
-    return [
-        'unit_no' => $b->unit_name,
-        'project' => $b->project->name ?? 'N/A',
-        'customer' => $b->customer->name ?? 'N/A',
-        'date' => $b->booking_date ?? '-',
-        'status' => 'Cancelled'
-    ];
-});
-// dd($cancellationUnitsTable);
         return view('layouts.dashboard', compact(
             'totalPartners',
             'totalProject',
@@ -219,8 +181,6 @@ $cancellationUnitsTable = $cancelledBookings->map(function ($b) {
             'totalCustomerPayments',
             'activeCustomers',
             'inactiveCustomers',
-            'customerBookingValue',
-            'customerPayments',
             'bookingReport',
             'paymentReport',
             'receivableReport',
