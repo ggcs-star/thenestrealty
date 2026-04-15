@@ -150,7 +150,13 @@ Route::middleware('multi-auth:web,employee')->group(function () {
 
     Route::post('/employee/logout', [EmployeeAuthController::class, 'logout'])->name('employee.logout');
 });
+  // TEMPLATE
+Route::get('/template', [DocumentController::class, 'index'])->name('template.index');
+Route::post('/template/store', [DocumentController::class, 'store'])->name('template.store');
 
+// DOCUMENT
+Route::get('/document/create', [DocumentController::class, 'create'])->name('document.create');
+Route::post('/document/generate', [DocumentController::class, 'generate'])->name('document.generate');
 Route::middleware(['multi-auth:web,employee'])->group(function () {
     Route::get('/projects/create', [ProjectController::class, 'index'])->name('projects.create');
     Route::get('/project-list', [ProjectController::class, 'list'])->name('projects.list');
@@ -197,9 +203,7 @@ Route::middleware(['multi-auth:web,employee'])->group(function () {
     Route::post('/collections', [CollectionController::class, 'store'])->name('collections.store');
 
 
-    Route::get('/generate-document', [DocumentController::class, 'index'])->name('document.create');
-
-    Route::get('/template', [DocumentController::class, 'template'])->name('document.template');
+  
     Route::get('/loan-stages', [LoanStageController::class, 'index'])->name('loan-stages.index');
     Route::get('/loan-stages/create', [LoanStageController::class, 'create'])->name('loan-stages.create');
     Route::post('/loan-stages', [LoanStageController::class, 'store'])->name('loan-stages.store');
