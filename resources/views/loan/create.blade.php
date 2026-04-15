@@ -98,10 +98,27 @@
                     </div>
 
                     <!-- Loan Stage -->
-                    <div>
-                        <label for="loan_stage" class="block text-sm font-medium text-gray-700 mb-1">Loan Stage</label>
-                        <input type="text" name="loan_stage" id="loan_stage" placeholder="Loan Stage"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" />
+                    <!-- Loan Stage -->
+                    <div class="mb-3">
+
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-sm font-medium text-gray-700">Loan Stage</label>
+
+                            <button type="button" onclick="openStageModal()" class="text-xs text-blue-600 hover:underline">
+                                + Add Stage
+                            </button>
+                        </div>
+
+                        <select name="loan_stage_id" class="w-full border rounded-md px-3 py-2" required>
+                            <option value="">Select Stage</option>
+
+                            @foreach($stages as $stage)
+                                <option value="{{ $stage->id }}">
+                                    {{ $stage->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
                     </div>
                 </div>
 
@@ -122,5 +139,41 @@
                 </div>
             </form>
         </div>
+        <!-- 🔥 Stage Modal -->
+<div id="stageModal" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center">
+
+    <div class="bg-white rounded-xl p-5 w-96">
+
+        <h3 class="text-lg font-semibold mb-3">Add Loan Stage</h3>
+
+        <form method="POST" action="{{ route('loan-stages.store') }}">
+            @csrf
+
+            <input type="text" name="name" placeholder="Stage Name"
+                class="w-full border px-3 py-2 rounded-md mb-3" required>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeStageModal()"
+                    class="px-3 py-1 border rounded">Cancel</button>
+
+                <button class="px-3 py-1 bg-blue-600 text-white rounded">
+                    Save
+                </button>
+            </div>
+
+        </form>
+
     </div>
+
+</div>
+    </div>
+    <script>
+function openStageModal() {
+    document.getElementById('stageModal').classList.remove('hidden');
+}
+
+function closeStageModal() {
+    document.getElementById('stageModal').classList.add('hidden');
+}
+</script>
 @endsection

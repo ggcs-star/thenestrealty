@@ -72,13 +72,13 @@
     {{-- Total Commission --}}
     <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
         <p class="text-sm text-gray-500 mb-1">Total Commission</p>
-        <h3 class="text-2xl font-bold text-gray-900">₹ {{ number_format($total) }}</h3>
+        <h3 class="text-2xl font-bold text-gray-900">₹ {{ amountToPoints($total) }}</h3>
     </div>
 
     {{-- Paid --}}
     <div class="bg-green-50 border border-green-100 rounded-xl shadow-sm p-5">
         <p class="text-sm text-green-700 mb-1">Paid</p>
-        <h3 class="text-2xl font-bold text-green-700">₹ {{ number_format($paid) }}</h3>
+        <h3 class="text-2xl font-bold text-green-700">₹ {{ amountToPoints($paid) }}</h3>
         <p class="text-xs text-green-600 mt-1">
             {{ $total > 0 ? round(($paid/$total)*100) : 0 }}% completed
         </p>
@@ -87,7 +87,7 @@
     {{-- Pending --}}
     <div class="bg-orange-50 border border-orange-100 rounded-xl shadow-sm p-5">
         <p class="text-sm text-orange-700 mb-1">Pending</p>
-        <h3 class="text-2xl font-bold text-orange-700">₹ {{ number_format($pending) }}</h3>
+        <h3 class="text-2xl font-bold text-orange-700">₹ {{ amountToPoints($pending) }}</h3>
         <p class="text-xs text-orange-600 mt-1">
             {{ $total > 0 ? round(($pending/$total)*100) : 0 }}% remaining
         </p>
@@ -134,10 +134,10 @@
                     </div>
                     <div class="flex items-center gap-4 mt-2 sm:mt-0">
                         <div class="text-right">
-                            <p class="text-xl font-bold text-[#AA7F2A]">₹ {{ number_format($project['total']) }}</p>
+                            <p class="text-xl font-bold text-[#AA7F2A]">₹ {{ amountToPoints($project['total']) }}</p>
                             <div class="flex gap-3 text-xs">
-                                <span class="text-green-600">Paid: ₹ {{ number_format($project['paid']) }}</span>
-                                <span class="text-yellow-600">Pending: ₹ {{ number_format($project['pending']) }}</span>
+                                <span class="text-green-600">Paid: ₹ {{ amountToPoints($project['paid']) }}</span>
+                                <span class="text-yellow-600">Pending: ₹ {{ amountToPoints($project['pending']) }}</span>
                             </div>
                         </div>
                         <svg class="w-5 h-5 transform transition-transform text-gray-400 {{ $index === 0 ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +201,7 @@
                                 
                                 {{-- Total Amount --}}
                                 <td class="px-4 py-3 text-right">
-                                    <span class="text-gray-700">₹ {{ number_format($booking['total_amount'] ?? 0) }}</span>
+                                    <span class="text-gray-700">₹ {{ amountToPoints($booking['total_amount'] ?? 0) }}</span>
                                 </td>
                                 
                                 {{-- Commission Rate --}}
@@ -213,7 +213,7 @@
                                 
                                 {{-- Commission Amount --}}
                                 <td class="px-4 py-3 text-right">
-                                    <span class="font-bold text-[#AA7F2A]">₹ {{ number_format($booking['amount']) }}</span>
+                                    <span class="font-bold text-[#AA7F2A]">₹ {{ amountToPoints($booking['amount']) }}</span>
                                 </td>
                                 
                                 {{-- Status --}}
@@ -239,7 +239,7 @@
                                 <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600">Project Total:</td>
                                 <td class="px-4 py-3 text-right text-sm font-bold text-gray-800">-</td>
                                 <td class="px-4 py-3 text-right text-sm font-bold text-gray-800">-</td>
-                                <td class="px-4 py-3 text-right text-sm font-bold text-[#AA7F2A]">₹ {{ number_format($project['total']) }}</td>
+                                <td class="px-4 py-3 text-right text-sm font-bold text-[#AA7F2A]">₹ {{ amountToPoints($project['total']) }}</td>
                                 <td class="px-4 py-3"></td>
                             </tr>
                         </tfoot>

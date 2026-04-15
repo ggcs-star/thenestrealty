@@ -75,7 +75,7 @@ class EmployeeAuthController extends Controller
         $request->session()->regenerate();
 
         // 7. Redirect to dashboard
-        return redirect()->intended(route('employee.dashboard'));
+        return redirect()->intended(route('dashboard'));
     }
 
 

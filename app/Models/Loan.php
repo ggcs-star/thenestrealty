@@ -9,19 +9,28 @@ class Loan extends Model
 {
     use HasFactory;
     protected $fillable = [
-    'customer_name',
-    'booking_id',
-    'unit_name',
-    'bank_name',
-    'employee_name',
-    'employee_number',
-    'loan_amount',
-    'loan_stage',
-    'notes',
-    'employee_id',
-];
-public function employee()
+        'customer_name',
+        'booking_id',
+        'unit_name',
+        'bank_name',
+        'employee_name',
+        'employee_number',
+        'loan_amount',
+        'loan_stage_id',
+        'notes',
+        'employee_id',
+    ];
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function stage()
+    {
+        return $this->belongsTo(\App\Models\LoanStage::class, 'loan_stage_id');
+    }
+    public function booking()
 {
-    return $this->belongsTo(Employee::class, 'employee_id');
+    return $this->belongsTo(\App\Models\Booking::class, 'booking_id', 'id');
 }
 }

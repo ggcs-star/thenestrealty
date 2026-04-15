@@ -23,25 +23,21 @@ class Customer extends Model
         'employee_id',
     ];
 
-    /**
-     * Get all collections for the customer.
-     */
+   
   
 
      public function collections(): HasMany
     {
-        return $this->hasMany(Collection::class, 'customer_id'); // 🔧 fix: foreign key should be customer_id
+        return $this->hasMany(Collection::class, 'customer_id'); 
     }
  public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
 
-    /**
-     * Optionally, if customer is linked with bookings:
-     */
-    // public function bookings(): HasMany
-    // {
-    //     return $this->hasMany(Booking::class, 'customer_id');
-    // }
+    
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'customer_id');
+    }
 }

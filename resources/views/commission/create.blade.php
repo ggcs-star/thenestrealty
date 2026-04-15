@@ -80,7 +80,7 @@
                     @endif
                     <p><strong>Unit Name:</strong> {{ $booking->unit_name }}</p>
                     <p><strong>Booking Date:</strong> {{ \Carbon\Carbon::parse($booking->booking_date)->format('d-m-Y') }}</p>
-                    <p><strong>Total Amount:</strong> ₹{{ number_format($booking->total_amount, 2) }}</p>
+                    <p><strong>Total Amount:</strong> ₹{{ amountToPoints($booking->total_amount, 2) }}</p>
                 </div>
 
                 @php
@@ -108,7 +108,7 @@
                         <label for="booking_total_amount_display" class="block text-sm font-medium text-gray-700">Booking Total
                             Amount</label>
                         <input type="text" id="booking_total_amount_display"
-                            value="₹{{ number_format($booking->total_amount, 2) }}" readonly
+                            value="₹{{ amountToPoints($booking->total_amount, 2) }}" readonly
                             class="w-full px-3 py-2 mt-1 bg-gray-100 border border-gray-300 rounded shadow-sm cursor-not-allowed">
                     </div>
 
@@ -116,14 +116,14 @@
                         <label for="calculated_commission_display" class="block text-sm font-medium text-gray-700">Calculated
                             Commission</label>
                         <input type="text" id="calculated_commission_display"
-                            value="₹{{ number_format($suggestedCommissionAmount, 2) }}" readonly
+                            value="₹{{ amountToPoints($suggestedCommissionAmount, 2) }}" readonly
                             class="w-full px-3 py-2 mt-1 bg-gray-100 border border-gray-300 rounded shadow-sm cursor-not-allowed">
                     </div>
 
                     <div>
                         <label for="amount" class="block text-sm font-medium text-gray-700">Commission Amount (Editable)</label>
                         <input type="number" name="amount" id="amount" required step="0.01"
-                            value="{{ old('amount', number_format($suggestedCommissionAmount, 2, '.', '')) }}"
+                            value="{{ old('amount', amountToPoints($suggestedCommissionAmount, 2, '.', '')) }}"
                             class="w-full px-3 py-2 mt-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:border-blue-300 @error('amount') border-red-500 @enderror">
                         @error('amount')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
