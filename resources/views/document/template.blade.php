@@ -103,12 +103,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="relative rounded-xl overflow-hidden border border-gray-200 focus-within:ring-2 focus-within:ring-blue-400">
-                        <textarea name="template_html" id="template_html_input" rows="12" required
-                            class="w-full px-4 py-3 bg-gray-50 font-mono text-sm focus:bg-white focus:outline-none transition-all duration-200"
-                            placeholder="<div class='document'><h1>Hello @{{customer_name}}</h1><p>Booking: @{{booking_id}}</p></div>"></textarea>
-                        <div class="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-md px-2 py-0.5 text-[11px] font-mono text-gray-400 border border-gray-200">HTML</div>
-                    </div>
+                  <div class="relative rounded-xl overflow-hidden border border-gray-200 focus-within:ring-2 focus-within:ring-blue-400">
+    
+    <textarea name="template_html" id="template_html_input" rows="12"
+        class="w-full px-4 py-3 bg-gray-50 font-mono text-sm focus:bg-white focus:outline-none transition-all duration-200"
+        placeholder="<div class='document'><h1>Hello @{{customer_name}}</h1><p>Booking: @{{booking_id}}</p></div>"></textarea>
+    
+    <div class="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-md px-2 py-0.5 text-[11px] font-mono text-gray-400 border border-gray-200">
+        HTML
+    </div>
+
+</div>
                 </div>
 
                 <!-- Action Buttons -->
@@ -237,68 +242,86 @@
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
     }
 </style>
-
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
-// All JavaScript is now properly placed outside PHP tags
-(function() {
-    // Insert variable into textarea at cursor position
-    window.insertVariable = function(varName) {
-        const textarea = document.getElementById('template_html_input');
-        if (!textarea) return;
-        
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const variable = '@{{' + varName + '}}';
-        const text = textarea.value;
-        const newText = text.substring(0, start) + variable + text.substring(end);
-        textarea.value = newText;
-        textarea.focus();
-        textarea.setSelectionRange(start + variable.length, start + variable.length);
-    };
 
-    // Edit template function
-    window.editTemplate = function(id, name, html) {
-        document.getElementById('template_id').value = id;
-        document.getElementById('template_name_input').value = name;
-        document.getElementById('template_html_input').value = html;
-        
-        const form = document.getElementById('templateForm');
-        form.action = "/template/update/" + id;
-        
-        document.getElementById('submitBtnText').innerText = "Update Template";
-        document.getElementById('formTitle').innerHTML = "✏️ Edit Template";
-        
-        // Scroll to top smoothly
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+// 🔥 GLOBAL EDITOR
+let editor = null;
 
-    // Reset form handler
-    const resetBtn = document.getElementById('resetFormBtn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function(e) {
-            document.getElementById('templateForm').reset();
-            document.getElementById('template_id').value = '';
-            document.getElementById('templateForm').action = "{{ route('template.store') }}";
-            document.getElementById('submitBtnText').innerText = "Create Template";
-            document.getElementById('formTitle').innerHTML = "Create new template";
+// ✅ INIT CKEDITOR
+document.addEventListener("DOMContentLoaded", function () {
+    ClassicEditor
+        .create(document.querySelector('#template_html_input'))
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => {
+            console.error(error);
         });
+});
+
+// ✅ INSERT VARIABLE (CKEDITOR)
+window.insertVariable = function(varName) {
+    if (!editor) return;
+
+    editor.model.change(writer => {
+        editor.model.insertContent(
+            writer.createText(`@{{${varName}}}`)
+        );
+    });
+};
+
+// ✅ EDIT TEMPLATE
+window.editTemplate = function(id, name, html) {
+
+    document.getElementById('template_id').value = id;
+    document.getElementById('template_name_input').value = name;
+
+    // 🔥 SET DATA SAFELY
+    if (editor) {
+        editor.setData(html);
+    } else {
+        alert('Editor loading... try again');
+        return;
     }
 
-    // Search filter for templates
-    const searchInput = document.getElementById('searchTemplate');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function(e) {
-            const term = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#templatesTable tbody tr');
-            rows.forEach(row => {
-                const nameCell = row.querySelector('td:first-child .text-sm.font-semibold');
-                if (nameCell) {
-                    const templateName = nameCell.innerText.toLowerCase();
-                    row.style.display = templateName.includes(term) ? '' : 'none';
-                }
-            });
-        });
+    document.getElementById('templateForm').action = "/template/update/" + id;
+
+    document.getElementById('submitBtnText').innerText = "Update Template";
+    document.getElementById('formTitle').innerHTML = "✏️ Edit Template";
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// ✅ RESET FORM
+document.getElementById('resetFormBtn')?.addEventListener('click', function () {
+    
+    document.getElementById('templateForm').reset();
+    document.getElementById('template_id').value = '';
+
+    if (editor) {
+        editor.setData('');
     }
-})();
+
+    document.getElementById('templateForm').action = "/template/store";
+    document.getElementById('submitBtnText').innerText = "Create Template";
+    document.getElementById('formTitle').innerHTML = "Create new template";
+});
+
+// ✅ SEARCH FILTER
+document.getElementById('searchTemplate')?.addEventListener('keyup', function(e) {
+    const term = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#templatesTable tbody tr');
+
+    rows.forEach(row => {
+        const nameCell = row.querySelector('td:first-child .text-sm.font-semibold');
+        if (nameCell) {
+            const name = nameCell.innerText.toLowerCase();
+            row.style.display = name.includes(term) ? '' : 'none';
+        }
+    });
+});
+
 </script>
+
 @endsection
