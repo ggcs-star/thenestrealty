@@ -12,7 +12,7 @@ class Loan extends Model
         'customer_name',
         'booking_id',
         'unit_name',
-        'bank_name',
+        'bank_id',
         'employee_name',
         'employee_number',
         'loan_amount',

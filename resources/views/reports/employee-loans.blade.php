@@ -181,7 +181,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $loan->unit_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $loan->bank_name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $loan->bank->name ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-semibold text-gray-900">₹ {{ number_format($loan->loan_amount, 2) }}</span>
                                 </td>

@@ -120,14 +120,16 @@ class LoanController extends Controller
     public function list(Request $request)
     {
         // `loans` table uses `bank_name` (see migrations + view), so we don't eager-load `bank` relation here.
-        $query = Loan::with(['employee', 'stage', 'booking']);
+        $query = Loan::with(['employee', 'stage', 'booking', 'bank']);
 
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('customer_name', 'like', '%' . $request->search . '%')
                     ->orWhere('booking_id', 'like', '%' . $request->search . '%')
                     ->orWhere('unit_name', 'like', '%' . $request->search . '%')
-                    ->orWhere('bank_name', 'like', '%' . $request->search . '%');
+                    ->orWhereHas('bank', function ($bankQuery) use ($request) {
+                        $bankQuery->where('name', 'like', '%' . $request->search . '%');
+                    });
             });
         }
         if ($request->filled('stage')) {
@@ -216,18 +218,21 @@ class LoanController extends Controller
 
         // 1. Aggregated Data for the Tabs (Bank, Customer, Project)
         $bankWise = (clone $baseQuery)
+            ->withoutEagerLoads()
             ->join('banks', 'loans.bank_id', '=', 'banks.id')
             ->selectRaw('banks.name as bank_name, COUNT(loans.id) as total_cases, SUM(loans.loan_amount) as total_amount')
             ->groupBy('banks.name')
             ->get();
 
         $customerWise = (clone $baseQuery)
+            ->withoutEagerLoads()
             ->selectRaw('customer_name, COUNT(*) as total_cases, SUM(loan_amount) as total_amount')
             ->whereNotNull('customer_name')
             ->groupBy('customer_name')
             ->get();
 
         $projectWise = (clone $baseQuery)
+            ->withoutEagerLoads()
             ->selectRaw('unit_name as project_name, COUNT(*) as total_cases, SUM(loan_amount) as total_amount')
             ->whereNotNull('unit_name')
             ->groupBy('unit_name')

@@ -59,7 +59,7 @@
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-600">
-                                        {{ $loan->bank_name }}
+                                        {{ $loan->bank->name ?? '-' }}
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-600">
