@@ -169,7 +169,7 @@ class CustomerController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-// dd($request->all());
+        // dd($request->all());
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:15',
@@ -182,7 +182,6 @@ class CustomerController extends Controller
             'partner_name' => 'nullable|required_if:referred_by,via_partner|string',
         ]);
         $employeeId = auth('employee')->id();
-
 
         Customer::create([
             'name' => $validated['name'],
@@ -199,8 +198,6 @@ class CustomerController extends Controller
 
         return redirect()->route('customer.list')->with('success', 'Customer created successfully!');
     }
-
-
 
 
 }

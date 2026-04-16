@@ -28,6 +28,9 @@ $hideDashboard = true;
                     <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
                     <input type="text" name="name"
                         class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
+                        @error('name')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
                 </div>
 
                 <!-- Contact -->
@@ -35,6 +38,9 @@ $hideDashboard = true;
                     <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
                     <input type="tel" name="contact_number"
                         class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
+                        @error('contact_number')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
                 </div>
 
                 <!-- Email -->
@@ -42,6 +48,9 @@ $hideDashboard = true;
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
                     <input type="email" name="email"
                         class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
+                        @error('email')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
                 </div>
 
                 <!-- DOB -->
@@ -49,6 +58,10 @@ $hideDashboard = true;
                     <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                     <input type="date" name="dob"
                         class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
+                        @error('dob')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
+
                 </div>
 
                 <!-- Aadhaar -->
@@ -56,6 +69,10 @@ $hideDashboard = true;
                     <label class="block text-sm font-medium text-gray-700 mb-1">Aadhaar Number</label>
                     <input type="text" name="aadhar_number"
                         class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
+                        @error('aadhar_number')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
+                        
                 </div>
 
                 <!-- PAN -->
@@ -63,6 +80,9 @@ $hideDashboard = true;
                     <label class="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
                     <input type="text" name="pan_number"
                         class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
+                        @error('pan_number')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
                 </div>
 
                 <!-- Referral -->
@@ -74,6 +94,10 @@ $hideDashboard = true;
                         <option value="via_builder">Via Builder</option>
                         <option value="via_partner">Via Partner</option>
                     </select>
+                    @error('referred_by')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
+
                 </div>
 
                 <!-- Builder -->
@@ -86,6 +110,10 @@ $hideDashboard = true;
                             <option value="{{ $builder }}">{{ $builder }}</option>
                         @endforeach
                     </select>
+                    @error('builder_name')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
+
                 </div>
 
                 <!-- Partner -->
@@ -98,6 +126,9 @@ $hideDashboard = true;
                             <option value="{{ $partner }}">{{ $partner }}</option>
                         @endforeach
                     </select>
+                    @error('partner_name')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
                 </div>
 
             </div>

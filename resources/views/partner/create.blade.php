@@ -27,6 +27,9 @@
                     <label class="text-sm text-gray-600 mb-1 block">Partner Name</label>
                     <input type="text" name="partner_name"
                         class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
+                        @error('partner_name')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                 </div>
 
                 <!-- Contact -->
@@ -34,6 +37,9 @@
                     <label class="text-sm text-gray-600 mb-1 block">Contact Person</label>
                     <input type="tel" name="number_contact"
                         class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
+                        @error('number_contact')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                 </div>
 
                 <!-- Email -->
@@ -41,6 +47,10 @@
                     <label class="text-sm text-gray-600 mb-1 block">Email</label>
                     <input type="email" name="mail_id"
                         class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
+                        @error('mail_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+
                 </div>
 
                 <!-- DOB -->
@@ -48,6 +58,9 @@
                     <label class="text-sm text-gray-600 mb-1 block">Date of Birth</label>
                     <input type="date" name="date_of_birth"
                         class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
+                        @error('date_of_birth')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                 </div>
 
                 <!-- Aadhaar -->
@@ -55,6 +68,9 @@
                     <label class="text-sm text-gray-600 mb-1 block">Aadhaar Number</label>
                     <input type="text" name="aadhaar_card"
                         class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
+                        @error('aadhaar_card')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror   
                 </div>
 
                 <!-- PAN -->
@@ -62,6 +78,9 @@
                     <label class="text-sm text-gray-600 mb-1 block">PAN Number</label>
                     <input type="text" name="pan_card"
                         class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
+                        @error('pan_card')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                 </div>
 
                 <!-- Commission -->
@@ -69,6 +88,9 @@
                     <label class="text-sm text-gray-600 mb-1 block">Commission</label>
                     <input type="text" name="commission"
                         class="w-full h-11 px-4 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#AC7E2C]">
+                        @error('commission')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                 </div>
 
                 <!-- Status -->
@@ -80,6 +102,9 @@
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                     </select>
+                    @error('status')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
             </div>

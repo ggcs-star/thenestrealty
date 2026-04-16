@@ -15,44 +15,56 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $user = auth('employee')->user();
         $today = Carbon::today();
-        $employeeId = auth('employee')->id();
-        $isEmployee = auth('employee')->check();
+
+        $teamIds = [];
+
+        if ($user) {
+            $teamIds = $user->isManager()
+                ? Employee::where('manager_id', $user->id)
+                    ->pluck('id')
+                    ->push($user->id)
+                    ->toArray()
+                : [$user->id];
+
+        }
 
         $projectQuery = Project::query();
         $bookingQuery = Booking::query();
         $collectionQuery = Collection::query();
 
-        if ($isEmployee) {
-            $projectQuery->where('assigned_employee', $employeeId);
-            $bookingQuery->where('employee_id', $employeeId);
-            $collectionQuery->where('employee_id', $employeeId);
+        if ($user) {
+            $projectQuery->whereIn('assigned_employee', $teamIds);
+            $bookingQuery->whereIn('employee_id', $teamIds);
+            $collectionQuery->whereIn('employee_id', $teamIds);
         }
 
-        $totalPartners = $isEmployee
-            ? ChannelPartner::where('employee_id', $employeeId)->count()
+
+        $totalPartners = $user
+            ? ChannelPartner::whereIn('employee_id', $teamIds)->count()
             : ChannelPartner::count();
 
         $totalProject = $projectQuery->count();
         $totalBooking = $bookingQuery->count();
         $totalCollection = $collectionQuery->count();
 
-        $totalCommission = Commission::whereHas('booking', function ($q) use ($employeeId, $isEmployee) {
-            if ($isEmployee) {
-                $q->where('employee_id', $employeeId);
+        $totalCommission = Commission::whereHas('booking', function ($q) use ($user, $teamIds) {
+            if ($user) {
+                $q->whereIn('employee_id', $teamIds);
             }
         })->count();
 
-        $totalEmployees = $isEmployee ? 1 : Employee::count();
+        $totalEmployees = $user ? count($teamIds) : Employee::count();
 
-        $allFollowUps = $collectionQuery->with('booking')
-            ->latest('date')
-            ->get();
+
+        $allFollowUps = $collectionQuery->with('booking')->latest('date')->get();
 
         $todayFollowUps = $allFollowUps->where('date', $today)->take(3);
         $historyFollowUps = $allFollowUps->where('date', '<', $today)->take(3);
         $recentFollowUps = $allFollowUps->take(3);
         $completeFollowUps = $allFollowUps->where('status', 'completed')->take(3);
+
 
         $projects = $projectQuery->get();
 
@@ -63,7 +75,6 @@ class DashboardController extends Controller
         $availableUnitsTable = $projects
             ->sortByDesc('created_at')
             ->flatMap(function ($p) {
-
                 $unitSizes = $p->unit_sizes ?? [];
 
                 return collect($p->available_units)->map(function ($unit) use ($p, $unitSizes) {
@@ -79,28 +90,27 @@ class DashboardController extends Controller
             ->values();
 
         $bookedUnitsTable = Booking::with(['customer', 'project'])
-            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->when($user, fn($q) => $q->whereIn('employee_id', $teamIds))
             ->latest()
             ->take(5)
             ->get()
-            ->map(function ($b) {
+            ->map(fn($b) => [
+                'unit_no' => $b->unit_name,
+                'tower' => $b->project->name ?? 'N/A',
+                'customer' => $b->customer->name ?? 'N/A',
+                'booking_id' => $b->booking_id ?? 'N/A',
+                'size' => ($b->unit_size && $b->unit_unit)
+                    ? $b->unit_size . ' ' . $b->unit_unit
+                    : 'N/A',
+                'status' => 'Booked'
+            ]);
 
 
-                return [
-                    'unit_no' => $b->unit_name,
-
-                    'tower' => $b->project->name ?? 'N/A',
-                    'customer' => $b->customer->name ?? 'N/A',
-                    'booking_id' => $b->booking_id ?? 'N/A',
-                    'size' => ($b->unit_size && $b->unit_unit)
-                        ? $b->unit_size . ' ' . $b->unit_unit
-                        : 'N/A',
-                    'status' => 'Booked'
-                ];
-            });
-
-        $customers = $isEmployee
-            ? Customer::where('employee_id', $employeeId)->with(['bookings', 'collections'])->latest()->get()
+        $customers = $user
+            ? Customer::whereIn('employee_id', $teamIds)
+                ->with(['bookings', 'collections'])
+                ->latest()
+                ->get()
             : Customer::with(['bookings', 'collections'])->latest()->get();
 
         $totalCustomers = $customers->count();
@@ -110,8 +120,9 @@ class DashboardController extends Controller
         $activeCustomers = $customers->filter(fn($c) => $c->bookings->count() > 0)->count();
         $inactiveCustomers = $totalCustomers - $activeCustomers;
 
+
         $bookingReport = Booking::with('customer')
-            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->when($user, fn($q) => $q->whereIn('employee_id', $teamIds))
             ->latest()
             ->take(5)
             ->get()
@@ -124,7 +135,7 @@ class DashboardController extends Controller
             ]);
 
         $paymentReport = Collection::with('customer')
-            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->when($user, fn($q) => $q->whereIn('employee_id', $teamIds))
             ->latest('date')
             ->take(5)
             ->get()
@@ -147,7 +158,7 @@ class DashboardController extends Controller
         })->sortByDesc('due')->take(5);
 
         $cancellationUnitsTable = Booking::with(['project', 'customer'])
-            ->when($isEmployee, fn($q) => $q->where('employee_id', $employeeId))
+            ->when($user, fn($q) => $q->whereIn('employee_id', $teamIds))
             ->where('status', 'cancelled')
             ->latest()
             ->take(5)
