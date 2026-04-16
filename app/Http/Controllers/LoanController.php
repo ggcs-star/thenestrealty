@@ -180,9 +180,86 @@ class LoanController extends Controller
 
         return redirect()->route('loan.list')->with('success', 'Loan updated successfully');
     }
-public function reports(Request $request)
+    public function reports(Request $request)
+    {
+        $baseQuery = Loan::query()
+
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $search = $request->search;
+
+                $q->where(function ($subQ) use ($search) {
+                    $subQ->where('customer_name', 'like', "%$search%")
+                        ->orWhere('bank_name', 'like', "%$search%")
+                        ->orWhere('unit_name', 'like', "%$search%");
+                });
+            })
+
+            ->when($request->filled('stage'), function ($q) use ($request) {
+                $q->where('loan_stage_id', $request->stage);
+            })
+
+            ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
+                $q->whereBetween('created_at', [
+                    $request->from_date . ' 00:00:00',
+                    $request->to_date . ' 23:59:59'
+                ]);
+            });
+
+        $employeeData = (clone $baseQuery)
+            ->selectRaw('employee_id, COUNT(*) as total_loans, SUM(loan_amount) as total_amount')
+            ->groupBy('employee_id')
+            ->get();
+
+        $employeeIds = $employeeData->pluck('employee_id')->filter();
+
+        $employees = Employee::whereIn('id', $employeeIds)
+            ->pluck('name', 'id');
+
+        $employeeData->map(function ($item) use ($employees) {
+            $item->employee_name = $employees[$item->employee_id] ?? 'N/A';
+            return $item;
+        });
+
+        $summary = (clone $baseQuery)
+            ->selectRaw('COUNT(*) as total, SUM(loan_amount) as totalAmount')
+            ->first();
+
+        $total = $summary->total;
+        $totalAmount = $summary->totalAmount;
+
+        $stageStats = (clone $baseQuery)
+            ->selectRaw('loan_stage_id, COUNT(*) as count, SUM(loan_amount) as amount')
+            ->groupBy('loan_stage_id')
+            ->get()
+            ->keyBy('loan_stage_id');
+
+        $stageCounts = LoanStage::orderBy('name')->get()->map(function ($stage) use ($stageStats, $total) {
+
+            $data = $stageStats[$stage->id] ?? null;
+
+            $count = $data->count ?? 0;
+            $amount = $data->amount ?? 0;
+
+            return [
+                'id' => $stage->id,
+                'name' => $stage->name,
+                'count' => $count,
+                'amount' => $amount,
+                'percentage' => $total > 0 ? round(($count / $total) * 100, 1) : 0
+            ];
+        });
+
+        return view('reports.loan', compact(
+            'employeeData',
+            'total',
+            'totalAmount',
+            'stageCounts'
+        ));
+    }
+public function employeeLoans(Request $request, $employeeId)
 {
     $query = Loan::with(['employee', 'stage'])
+        ->where('employee_id', $employeeId)
 
         ->when($request->filled('search'), function ($q) use ($request) {
             $search = $request->search;
@@ -205,35 +282,12 @@ public function reports(Request $request)
             ]);
         });
 
-    $filteredQuery = clone $query;
-
     $loans = $query->latest()->paginate(10)->withQueryString();
 
-    $total = $filteredQuery->count();
-    $totalAmount = (clone $filteredQuery)->sum('loan_amount');
+    $employee = Employee::find($employeeId);
 
-    $stageCounts = LoanStage::orderBy('name')->get()->map(function ($stage) use ($filteredQuery, $total) {
-
-        $count = (clone $filteredQuery)->where('loan_stage_id', $stage->id)->count();
-        $amount = (clone $filteredQuery)->where('loan_stage_id', $stage->id)->sum('loan_amount');
-
-        return [
-            'id' => $stage->id,
-            'name' => $stage->name,
-            'count' => $count,
-            'amount' => $amount,
-            'percentage' => $total > 0 ? round(($count / $total) * 100, 1) : 0
-        ];
-    });
-
-    return view('reports.loan', compact(
-        'loans',
-        'total',
-        'totalAmount',
-        'stageCounts'
-    ));
+    return view('reports.employee-loans', compact('loans', 'employee'));
 }
-
     public function updateStage(Request $request, $id)
     {
         $request->validate([

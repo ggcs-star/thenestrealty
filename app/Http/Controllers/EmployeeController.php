@@ -28,20 +28,21 @@ public function index(Request $request): View
         });
     }
 
-    // 🎯 STATUS FILTER
     if ($request->filled('status')) {
         $query->where('status', $request->status);
     }
 
-    // 📄 PAGINATION (MAIN FIX)
     $employees = $query->latest()->paginate(10);
 
     return view('empmanagement.index', compact('employees'));
 }
-    public function create(): View
-    {
-        return view('empmanagement.create');
-    }
+   
+    public function create()
+{
+    $managers = Employee::where('designation', 'Manager')->get();
+
+    return view('empmanagement.create', compact('managers'));
+}
 
     public function assignManager(): View
     {
@@ -55,49 +56,64 @@ public function index(Request $request): View
     }
 
     public function store(Request $request): RedirectResponse
-    {
-        // Clean Validation With Custom Messages
-        $validated = $request->validate(
-            [
-                'name' => 'required|string|max:255',
-                'phone_number' => 'required|string|max:15',
-                'email' => 'required|email|unique:employees,email',
-                'birthdate' => 'required|date',
-                'designation' => 'required|string|max:255',
-                'password' => 'required|string|min:6|confirmed',
-                'status' => 'required|in:active,inactive',
-            ],
-            [
-                'name.required' => 'Please enter employee name.',
-                'phone_number.required' => 'Phone number is required.',
-                'email.required' => 'Email is required.',
-                'email.unique' => 'This email is already registered.',
-                'password.confirmed' => 'Password and confirmation do not match.',
-                'status.required' => 'Please select employee status.',
-            ]
-        );
+{
+    $user = auth('employee')->user(); 
+    $admin = auth()->user(); 
 
-        try {
-            // Auto Employee Code (Better Logic)
-            $lastEmployeeId = Employee::latest('id')->value('id') ?? 0;
-            $validated['employee_code'] = 'emp' . ($lastEmployeeId + 1);
+    $validated = $request->validate(
+        [
+            'name' => 'required|string|max:255',
+            'phone_number' => 'required|string|max:15',
+            'email' => 'required|email|unique:employees,email',
+            'birthdate' => 'required|date',
+            'designation' => 'required|string|max:255',
+            'password' => 'required|string|min:6|confirmed',
+            'status' => 'required|in:active,inactive',
+            'manager_id' => 'nullable|exists:employees,id', 
+        ],
+        [
+            'name.required' => 'Please enter employee name.',
+            'phone_number.required' => 'Phone number is required.',
+            'email.required' => 'Email is required.',
+            'email.unique' => 'This email is already registered.',
+            'password.confirmed' => 'Password and confirmation do not match.',
+            'status.required' => 'Please select employee status.',
+        ]
+    );
 
-            // Hash password
-            $validated['password'] = Hash::make($validated['password']);
+    try {
 
-            // Create Employee
-            Employee::create($validated);
+        $lastEmployeeId = Employee::latest('id')->value('id') ?? 0;
+        $validated['employee_code'] = 'emp' . ($lastEmployeeId + 1);
 
-            // Redirect With Sweet Success UX
-            return redirect()
-                ->route('employees.index')
-                ->with('success', '🎉 Employee has been created successfully!');
-        } catch (\Exception $e) {
-            return back()
-                ->withInput()
-                ->with('error', 'Something went wrong. Please try again later.');
+        $validated['password'] = Hash::make($validated['password']);
+
+        
+        if ($user && $user->isManager()) {
+            $validated['manager_id'] = $user->id;
         }
+
+        elseif ($admin) {
+            $validated['manager_id'] = $request->manager_id;
+        }
+
+        elseif ($user && $user->isEmployee()) {
+            return back()->with('error', 'You are not allowed to create employees.');
+        }
+
+      
+
+        Employee::create($validated);
+
+        return redirect()
+            ->route('employees.index')
+            ->with('success', '🎉 Employee has been created successfully!');
+    } catch (\Exception $e) {
+        return back()
+            ->withInput()
+            ->with('error', 'Something went wrong. Please try again later.');
     }
+}
 
     public function toggleStatus($id)
     {

@@ -13,9 +13,18 @@ class ProjectController extends Controller
 {
     public function index(Request $request): View
     {
-        $employees = [];
+        $employees = collect();
 
-        if (!auth('employee')->check()) {
+        if (auth('employee')->check()) {
+
+            $user = auth('employee')->user();
+
+            if ($user->isManager()) {
+                $employees = Employee::where('manager_id', $user->id)->get();
+            } else {
+                $employees = collect();
+            }
+        } else {
             $employees = Employee::all();
         }
 
@@ -25,40 +34,52 @@ class ProjectController extends Controller
         ]);
     }
     public function list(Request $request): View
-{
-    $query = Project::with('employee');
+    {
+        $query = Project::with('employee');
 
-    // 👤 Employee restriction
-    if (auth('employee')->check()) {
-        $query->where('assigned_employee', auth('employee')->id());
+        if (auth('employee')->check()) {
+
+            $user = auth('employee')->user();
+
+            if ($user->isManager()) {
+
+                $query->where(function ($q) use ($user) {
+
+                    $q->where('assigned_employee', $user->id)
+
+                        ->orWhereIn('assigned_employee', function ($sub) use ($user) {
+                            $sub->select('id')
+                                ->from('employees')
+                                ->where('manager_id', $user->id);
+                        });
+                });
+            } else {
+                $query->where('assigned_employee', $user->id);
+            }
+        }
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->search . '%')
+                    ->orWhere('builder_name', 'LIKE', '%' . $request->search . '%')
+                    ->orWhere('builder_number', 'LIKE', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->employee_id && !auth('employee')->check()) {
+            $query->where('assigned_employee', $request->employee_id);
+        }
+
+        $projects = $query->latest()->paginate(5)->withQueryString();
+
+        $employees = Employee::all();
+
+        return view('project.list', compact('projects', 'employees'));
     }
-
-    // 🔍 Search filter
-    if ($request->search) {
-        $query->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->search . '%')
-              ->orWhere('builder_name', 'LIKE', '%' . $request->search . '%')
-              ->orWhere('builder_number', 'LIKE', '%' . $request->search . '%');
-        });
-    }
-
-    // 📊 Status filter
-    if ($request->status) {
-        $query->where('status', $request->status);
-    }
-
-    // 👨‍💼 Employee filter (admin only)
-    if ($request->employee_id && !auth('employee')->check()) {
-        $query->where('assigned_employee', $request->employee_id);
-    }
-
-    // ✅ PAGINATION
-    $projects = $query->latest()->paginate(5)->withQueryString();
-
-    $employees = Employee::all();
-
-    return view('project.list', compact('projects', 'employees'));
-}
 
 
     // public function list(): View
@@ -79,16 +100,19 @@ class ProjectController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        \Log::info('Creating project', [
-            'name' => $request->name
-        ]);
+
+
+        $user = auth('employee')->user();
 
         if (auth('employee')->check()) {
-            $request->merge([
-                'assigned_employee' => auth('employee')->id(),
-            ]);
-        }
 
+            if (!$user->isManager()) {
+                $request->merge([
+                    'assigned_employee' => $user->id,
+                ]);
+            }
+
+        }
         $request->validate([
             'name' => 'required',
             'address' => 'required',
@@ -199,17 +223,41 @@ class ProjectController extends Controller
     public function edit($id): View
     {
         $project = Project::findOrFail($id);
-        $employees = Employee::all();
+        $employees = collect();
+
+        if (auth('employee')->check()) {
+
+            $user = auth('employee')->user();
+
+            if ($user->isManager()) {
+                $employees = Employee::where('manager_id', $user->id)->get();
+            } else {
+                $employees = collect();
+            }
+        } else {
+            $employees = Employee::all();
+        }
 
         return view('project.edit', compact('project', 'employees'));
     }
 
     public function update(Request $request, $id): RedirectResponse
     {
+        $user = auth('employee')->user();
+
         if (auth('employee')->check()) {
-            $request->merge([
-                'assigned_employee' => auth('employee')->id(),
-            ]);
+
+            if (!$user->isManager()) {
+                $request->merge([
+                    'assigned_employee' => $user->id,
+                ]);
+            } else {
+                $validEmployeeIds = Employee::where('manager_id', $user->id)->pluck('id')->toArray();
+
+                if (!in_array($request->assigned_employee, $validEmployeeIds)) {
+                    return back()->with('error', 'Invalid employee selected.');
+                }
+            }
         }
 
         $request->validate([

@@ -202,6 +202,8 @@ Route::middleware(['multi-auth:web,employee'])->group(function () {
     Route::get('/track-loan', [LoanController::class, 'list'])->name('loan.list');
     Route::post('/loans', [LoanController::class, 'store'])->name('loan.store');
     Route::get('/loan-reports', [LoanController::class, 'reports'])->name('loan.reports');
+    Route::get('/employee-loans/{id}', [LoanController::class, 'employeeLoans'])
+    ->name('employee.loans');
     Route::get('/loan/{id}/edit', [LoanController::class, 'edit'])->name('loan.edit');
     Route::post('/loan/{id}/update', [LoanController::class, 'update'])->name('loan.update');
     Route::get('/create-collection', [CollectionController::class, 'create'])->name('create-collection');
