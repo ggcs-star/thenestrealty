@@ -154,6 +154,12 @@ Route::middleware('multi-auth:web,employee')->group(function () {
 Route::get('/template', [DocumentController::class, 'index'])->name('template.index');
 Route::post('/template/store', [DocumentController::class, 'store'])->name('template.store');
 
+Route::get('/template/edit/{id}', [DocumentController::class, 'edit'])->name('template.edit');
+
+Route::post('/template/update/{id}', [DocumentController::class, 'update'])->name('template.update');
+
+Route::get('/template/delete/{id}', [DocumentController::class, 'delete'])->name('template.delete');
+
 // DOCUMENT
 Route::get('/document/create', [DocumentController::class, 'create'])->name('document.create');
 Route::post('/document/generate', [DocumentController::class, 'generate'])->name('document.generate');
