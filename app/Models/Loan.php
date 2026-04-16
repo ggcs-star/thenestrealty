@@ -12,7 +12,7 @@ class Loan extends Model
         'customer_name',
         'booking_id',
         'unit_name',
-        'bank_name',
+        'bank_id',
         'employee_name',
         'employee_number',
         'loan_amount',
@@ -33,4 +33,10 @@ class Loan extends Model
     {
         return $this->belongsTo(\App\Models\Booking::class, 'booking_id', 'id');
     }
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
 }
