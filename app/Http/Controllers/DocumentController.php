@@ -79,4 +79,31 @@ class DocumentController extends Controller
 
     return $pdf->stream('document.pdf');
 }
+// 🔹 Edit Page
+public function edit($id)
+{
+    $document = Document::findOrFail($id);
+    return view('document.edit', compact('document'));
+}
+
+// 🔹 Update
+public function update(Request $request, $id)
+{
+    $document = Document::findOrFail($id);
+
+    $document->update([
+        'name' => $request->name,
+        'template_html' => $request->template_html,
+    ]);
+
+    return redirect()->route('template.index')->with('success', 'Updated');
+}
+
+// 🔹 Delete
+public function delete($id)
+{
+    Document::findOrFail($id)->delete();
+
+    return back()->with('success', 'Template Deleted');
+}
 }
