@@ -18,57 +18,18 @@ class LoanController extends Controller
     public function index()
     {
         if (auth('employee')->check()) {
+            $employeeId = auth('employee')->id();
 
-            $user = auth('employee')->user();
-
-            if ($user->isManager()) {
-
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
-
-                $customers = Customer::whereIn('employee_id', $teamIds)->get();
-
-                $Booking = Booking::whereIn('employee_id', $teamIds)->get();
-
-                $Emp = Employee::whereIn('id', $teamIds)->get();
-            } else {
-
-                $employeeId = $user->id;
-
-                $customers = Customer::where('employee_id', $employeeId)->get();
-
-                $Booking = Booking::where('employee_id', $employeeId)->get();
-
-                $Emp = Employee::where('id', $employeeId)->get();
-            }
+            $customers = Customer::where('employee_id', $employeeId)->get();
+            $Booking = Booking::where('employee_id', $employeeId)->get();
+            $Emp = Employee::where('id', $employeeId)->get();
         } else {
-
             $customers = Customer::all();
             $Booking = Booking::all();
             $Emp = Employee::all();
         }
 
-        $loansQuery = Loan::with(['employee', 'stage']);
-
-        if (auth('employee')->check()) {
-
-            $user = auth('employee')->user();
-
-            if ($user->isManager()) {
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
-
-                $loansQuery->whereIn('employee_id', $teamIds);
-            } else {
-                $loansQuery->where('employee_id', $user->id);
-            }
-        }
-
-        $loans = $loansQuery->latest()->get();
+        $loans = Loan::with(['employee', 'stage'])->latest()->get();
 
         $stages = LoanStage::all();
 
@@ -156,25 +117,6 @@ class LoanController extends Controller
     {
         $query = Loan::with(['employee', 'stage', 'booking']);
 
-
-        if (auth('employee')->check()) {
-
-            $user = auth('employee')->user();
-
-            if ($user->isManager()) {
-
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
-
-                $query->whereIn('employee_id', $teamIds);
-            } else {
-                $query->where('employee_id', $user->id);
-            }
-        }
-
-
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('customer_name', 'like', '%' . $request->search . '%')
@@ -183,11 +125,9 @@ class LoanController extends Controller
                     ->orWhere('bank_name', 'like', '%' . $request->search . '%');
             });
         }
-
         if ($request->filled('stage')) {
             $query->where('loan_stage_id', $request->stage);
         }
-
 
         $loans = $query->latest()->paginate(10);
 
@@ -243,21 +183,18 @@ class LoanController extends Controller
     public function reports(Request $request)
     {
         $baseQuery = Loan::query()
-
+            ->with(['employee', 'stage', 'booking'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->search;
-
                 $q->where(function ($subQ) use ($search) {
                     $subQ->where('customer_name', 'like', "%$search%")
                         ->orWhere('bank_name', 'like', "%$search%")
                         ->orWhere('unit_name', 'like', "%$search%");
                 });
             })
-
             ->when($request->filled('stage'), function ($q) use ($request) {
                 $q->where('loan_stage_id', $request->stage);
             })
-
             ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
                 $q->whereBetween('created_at', [
                     $request->from_date . ' 00:00:00',
@@ -265,89 +202,93 @@ class LoanController extends Controller
                 ]);
             });
 
-        $employeeData = (clone $baseQuery)
-            ->selectRaw('employee_id, COUNT(*) as total_loans, SUM(loan_amount) as total_amount')
-            ->groupBy('employee_id')
+        // 1. Aggregated Data for the Tabs (Bank, Customer, Project)
+        $bankWise = (clone $baseQuery)
+            ->selectRaw('bank_name, COUNT(*) as total_cases, SUM(loan_amount) as total_amount')
+            ->whereNotNull('bank_name')
+            ->groupBy('bank_name')
             ->get();
 
-        $employeeIds = $employeeData->pluck('employee_id')->filter();
+        $customerWise = (clone $baseQuery)
+            ->selectRaw('customer_name, COUNT(*) as total_cases, SUM(loan_amount) as total_amount')
+            ->whereNotNull('customer_name')
+            ->groupBy('customer_name')
+            ->get();
 
-        $employees = Employee::whereIn('id', $employeeIds)
-            ->pluck('name', 'id');
+        $projectWise = (clone $baseQuery)
+            ->selectRaw('unit_name as project_name, COUNT(*) as total_cases, SUM(loan_amount) as total_amount')
+            ->whereNotNull('unit_name')
+            ->groupBy('unit_name')
+            ->get();
 
-        $employeeData->map(function ($item) use ($employees) {
-            $item->employee_name = $employees[$item->employee_id] ?? 'N/A';
-            return $item;
-        });
+        // 2. Top Summary Cards Data
+        $totalLoans = (clone $baseQuery)->count();
+        $totalAmount = (clone $baseQuery)->sum('loan_amount');
+        $dynamicStages = \App\Models\LoanStage::count();
 
-        $summary = (clone $baseQuery)
-            ->selectRaw('COUNT(*) as total, SUM(loan_amount) as totalAmount')
-            ->first();
+        // Assuming stages with 'Disbursed' or 'Closed' or 'Completed' denote finished pipelines
+        $disbursedCases = (clone $baseQuery)->whereHas('stage', function($q) {
+            $q->where('name', 'like', '%Disbursed%')
+              ->orWhere('name', 'like', '%Closed%')
+              ->orWhere('name', 'like', '%Completed%');
+        })->count();
 
-        $total = $summary->total;
-        $totalAmount = $summary->totalAmount;
+        // 3. Dropdown Options for Filters
+        $banksList = Loan::select('bank_name')->whereNotNull('bank_name')->distinct()->pluck('bank_name');
+        $customersList = Loan::select('customer_name')->whereNotNull('customer_name')->distinct()->pluck('customer_name');
+        $employeesList = \App\Models\Employee::all();
+        $stagesList = \App\Models\LoanStage::all();
 
-        $stageStats = (clone $baseQuery)
-            ->selectRaw('loan_stage_id, COUNT(*) as count, SUM(loan_amount) as amount')
-            ->groupBy('loan_stage_id')
-            ->get()
-            ->keyBy('loan_stage_id');
-
-        $stageCounts = LoanStage::orderBy('name')->get()->map(function ($stage) use ($stageStats, $total) {
-
-            $data = $stageStats[$stage->id] ?? null;
-
-            $count = $data->count ?? 0;
-            $amount = $data->amount ?? 0;
-
-            return [
-                'id' => $stage->id,
-                'name' => $stage->name,
-                'count' => $count,
-                'amount' => $amount,
-                'percentage' => $total > 0 ? round(($count / $total) * 100, 1) : 0
-            ];
-        });
+        // 4. Detailed List Data (for the main table view)
+        $loans = $baseQuery->latest()->paginate(10)->withQueryString();
 
         return view('reports.loan', compact(
-            'employeeData',
-            'total',
+            'loans',
+            'totalLoans',
             'totalAmount',
-            'stageCounts'
+            'dynamicStages',
+            'disbursedCases',
+            'bankWise',
+            'customerWise',
+            'projectWise',
+            'banksList',
+            'customersList',
+            'employeesList',
+            'stagesList'
         ));
     }
-    public function employeeLoans(Request $request, $employeeId)
-    {
-        $query = Loan::with(['employee', 'stage'])
-            ->where('employee_id', $employeeId)
+public function employeeLoans(Request $request, $employeeId)
+{
+    $query = Loan::with(['employee', 'stage'])
+        ->where('employee_id', $employeeId)
 
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $search = $request->search;
+        ->when($request->filled('search'), function ($q) use ($request) {
+            $search = $request->search;
 
-                $q->where(function ($subQ) use ($search) {
-                    $subQ->where('customer_name', 'like', "%$search%")
-                        ->orWhere('bank_name', 'like', "%$search%")
-                        ->orWhere('unit_name', 'like', "%$search%");
-                });
-            })
-
-            ->when($request->filled('stage'), function ($q) use ($request) {
-                $q->where('loan_stage_id', $request->stage);
-            })
-
-            ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
-                $q->whereBetween('created_at', [
-                    $request->from_date . ' 00:00:00',
-                    $request->to_date . ' 23:59:59'
-                ]);
+            $q->where(function ($subQ) use ($search) {
+                $subQ->where('customer_name', 'like', "%$search%")
+                    ->orWhere('bank_name', 'like', "%$search%")
+                    ->orWhere('unit_name', 'like', "%$search%");
             });
+        })
 
-        $loans = $query->latest()->paginate(10)->withQueryString();
+        ->when($request->filled('stage'), function ($q) use ($request) {
+            $q->where('loan_stage_id', $request->stage);
+        })
 
-        $employee = Employee::find($employeeId);
+        ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
+            $q->whereBetween('created_at', [
+                $request->from_date . ' 00:00:00',
+                $request->to_date . ' 23:59:59'
+            ]);
+        });
 
-        return view('reports.employee-loans', compact('loans', 'employee'));
-    }
+    $loans = $query->latest()->paginate(10)->withQueryString();
+
+    $employee = Employee::find($employeeId);
+
+    return view('reports.employee-loans', compact('loans', 'employee'));
+}
     public function updateStage(Request $request, $id)
     {
         $request->validate([
