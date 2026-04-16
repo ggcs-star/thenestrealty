@@ -12,16 +12,36 @@ use App\Models\Customer;
 use Illuminate\View\View;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
-
+use App\Models\Employee;
 
 class CollectionController extends Controller
 {
-    public function create(): View
-    {
-        if (auth('employee')->check()) {
-            $employeeId = auth('employee')->id();
+  public function create(): View
+{
+    if (auth('employee')->check()) {
 
-            // Sirf is employee ke customers aur bookings
+        $user = auth('employee')->user();
+
+        if ($user->isManager()) {
+
+            $teamIds = Employee::where('manager_id', $user->id)
+                ->pluck('id')
+                ->push($user->id)
+                ->toArray();
+
+            $customers = Customer::whereIn('employee_id', $teamIds)
+                ->select('id', 'name')
+                ->get();
+
+            $BookingId = Booking::whereIn('employee_id', $teamIds)
+                ->select('id', 'booking_id')
+                ->get();
+        }
+
+        else {
+
+            $employeeId = $user->id;
+
             $customers = Customer::where('employee_id', $employeeId)
                 ->select('id', 'name')
                 ->get();
@@ -29,14 +49,17 @@ class CollectionController extends Controller
             $BookingId = Booking::where('employee_id', $employeeId)
                 ->select('id', 'booking_id')
                 ->get();
-        } else {
-            // Admin ke liye sabhi records
-            $customers = Customer::select('id', 'name')->get();
-            $BookingId = Booking::select('id', 'booking_id')->get();
         }
-
-        return view('collections.create', compact('customers', 'BookingId'));
     }
+
+    else {
+
+        $customers = Customer::select('id', 'name')->get();
+        $BookingId = Booking::select('id', 'booking_id')->get();
+    }
+
+    return view('collections.create', compact('customers', 'BookingId'));
+}
 
 
     public function index(Request $request)
@@ -155,12 +178,33 @@ public function listCollections(): View
     try {
         $query = Collection::with(['customer', 'booking']);
 
-        // 👤 Employee filter
+        // ===============================
+        // 🔐 ROLE BASED FILTER
+        // ===============================
         if (auth('employee')->check()) {
-            $query->where('employee_id', auth('employee')->id());
+
+            $user = auth('employee')->user();
+
+            // ✅ Manager → self + team
+            if ($user->isManager()) {
+
+                $teamIds = Employee::where('manager_id', $user->id)
+                    ->pluck('id')
+                    ->push($user->id)
+                    ->toArray();
+
+                $query->whereIn('employee_id', $teamIds);
+            }
+
+            // ✅ Employee → only self
+            else {
+                $query->where('employee_id', $user->id);
+            }
         }
 
+        // ===============================
         // 📅 DATE FILTER
+        // ===============================
         $from = request('from');
         $to = request('to');
 
@@ -172,12 +216,16 @@ public function listCollections(): View
             $query->whereDate('date', '<=', $to);
         }
 
-        // 🎯 STATUS FILTER (NEW)
+        // ===============================
+        // 🎯 STATUS
+        // ===============================
         if (request('status')) {
             $query->where('status', request('status'));
         }
 
-        // 🔍 SEARCH (NEW)
+        // ===============================
+        // 🔍 SEARCH
+        // ===============================
         if (request('search')) {
             $search = request('search');
 
@@ -190,12 +238,15 @@ public function listCollections(): View
             });
         }
 
-        // ✅ PAGINATION (MAIN FIX)
+        // ===============================
+        // ✅ PAGINATION
+        // ===============================
         $collections = $query->orderBy('date', 'desc')->paginate(10);
 
         return view('collections.list', compact('collections'));
 
     } catch (\Exception $e) {
+
         Log::error("Failed to fetch collections", [
             'error' => $e->getMessage()
         ]);

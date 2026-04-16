@@ -63,3 +63,6 @@ CREATE TABLE `documents` (
     `created_at` TIMESTAMP NULL DEFAULT NULL,
     `updated_at` TIMESTAMP NULL DEFAULT NULL
 );
+
+
+ALTER TABLE customers DROP INDEX name;

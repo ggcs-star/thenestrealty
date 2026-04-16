@@ -7,7 +7,7 @@
 
             @php
                 if (Auth::guard('employee')->check()) {
-                    $dashboard = route('employee.dashboard');
+                    $dashboard = route('dashboard');
                 } else {
                     $dashboard = route('dashboard');
                 }
