@@ -98,7 +98,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/point-settings', [PointSettingController::class, 'index'])->name('point-settings.index');
     Route::post('/point-settings', [PointSettingController::class, 'update'])->name('point-settings.update');
-
+    Route::get('/collection-report', [CollectionController::class, 'collectionReport'])->name('collections.report');
 
 
     // Route::get('/partners', [ChannelpartnerController::class, 'index'])->name('partner.list');

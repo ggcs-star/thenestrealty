@@ -43,7 +43,10 @@ class Project extends Model
     {
         return $this->belongsTo(Employee::class, 'assigned_employee');
     }
-
+public function bookings()
+{
+    return $this->hasMany(Booking::class);
+}
     /**
      * Get the documents as an array
      * This accessor ensures documents is always an array, even if null

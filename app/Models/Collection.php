@@ -37,10 +37,10 @@ class Collection extends Model
     {
         return $this->belongsTo(Customer::class);
     }
-public function employee()
-{
-    return $this->belongsTo(Employee::class, 'employee_id');
-}
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
     /**
      * Accessor for customer_name attribute
      */
