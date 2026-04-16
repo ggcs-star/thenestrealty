@@ -8,8 +8,6 @@
 <div class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-4 sm:px-6 py-6 max-w-7xl">
         
-      
-
         {{-- Summary Statistics --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             
@@ -166,73 +164,65 @@
             @endif
         </div>
 
-        {{-- Data Table --}}
+        {{-- Employee Performance Table --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Employee Performance Report</h3>
+                <p class="text-sm text-gray-500 mt-1">Summary of loans handled by each employee</p>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Unit</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bank</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Employee</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stage</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Employee Name</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Loans</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Amount</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Average Loan Amount</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        @forelse($loans as $loan)
-                            @php 
-                                $stage = optional($loan->stage);
-                                $stageName = $stage->name ?? 'pending';
-                                
-                                $stageColors = [
-                                    'approved' => 'bg-green-100 text-green-800 border-green-200',
-                                    'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                                    'rejected' => 'bg-red-100 text-red-800 border-red-200',
-                                ];
-                                $stageColor = $stageColors[$stageName] ?? $stageColors['pending'];
-                            @endphp
-                            
+                        @forelse($employeeData as $emp)
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
                                             <span class="text-blue-600 font-medium text-sm">
-                                                {{ strtoupper(substr($loan->customer_name, 0, 1)) }}
+                                                {{ strtoupper(substr($emp->employee->name ?? 'N/A', 0, 1)) }}
                                             </span>
                                         </div>
                                         <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">{{ $loan->customer_name }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $emp->employee->name ?? 'N/A' }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $loan->unit_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $loan->bank_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $loan->employee->name ?? '—' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-semibold text-gray-900">₹ {{ number_format($loan->loan_amount, 2) }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ number_format($emp->total_loans) }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex px-2.5 py-1 text-xs font-medium rounded-full border {{ $stageColor }}">
-                                        {{ ucfirst($stageName) }}
+                                    <span class="text-sm font-semibold text-gray-900">₹ {{ number_format($emp->total_amount, 2) }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-semibold text-gray-900">
+                                        ₹ {{ number_format($emp->total_loans > 0 ? $emp->total_amount / $emp->total_loans : 0, 2) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $loan->created_at->format('d M, Y') }}
+                                <td>
+                                    <a href="{{ route('employee.loans', $emp->employee_id) }}" class="text-blue-600">
+    {{ $emp->employee_name }}
+</a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-16">
+                                <td colspan="4" class="px-6 py-16">
                                     <div class="flex flex-col items-center justify-center">
                                         <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="text-lg font-medium text-gray-900 mb-1">No loan records found</h3>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-1">No employee data found</h3>
                                         <p class="text-gray-500 text-sm">Try adjusting your search or filter criteria</p>
                                     </div>
                                 </td>
@@ -241,13 +231,70 @@
                     </tbody>
                 </table>
             </div>
-
-            {{-- Pagination --}}
-            @if($loans->hasPages())
+            
+            {{-- Summary Footer --}}
+            @if($employeeData->count() > 0)
                 <div class="border-t border-gray-200 px-6 py-4 bg-gray-50">
-                    {{ $loans->withQueryString()->links() }}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">
+                            Showing <span class="font-semibold">{{ $employeeData->count() }}</span> employees
+                        </span>
+                        <span class="text-sm text-gray-600">
+                            Total Amount: <span class="font-semibold text-gray-900">₹ {{ number_format($employeeData->sum('total_amount'), 2) }}</span>
+                        </span>
+                    </div>
                 </div>
             @endif
+        </div>
+
+        {{-- Stage Distribution Chart (Optional) --}}
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{-- Stage Summary Card --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Stage Distribution</h4>
+                <div class="space-y-3">
+                    @foreach($stageCounts as $stage)
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium text-gray-700 capitalize">{{ $stage['name'] }}</span>
+                                <span class="text-sm text-gray-600">{{ $stage['count'] }} loans ({{ $stage['percentage'] }}%)</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full 
+                                    @if($stage['name'] == 'approved') bg-green-500
+                                    @elseif($stage['name'] == 'pending') bg-yellow-500
+                                    @elseif($stage['name'] == 'rejected') bg-red-500
+                                    @else bg-blue-500 @endif"
+                                    style="width: {{ $stage['percentage'] }}%">
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Top Performers Card --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Top Performers</h4>
+                <div class="space-y-3">
+                    @php
+                        $topPerformers = $employeeData->sortByDesc('total_amount')->take(5);
+                    @endphp
+                    @forelse($topPerformers as $index => $emp)
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold mr-3">
+                                    {{ $index + 1 }}
+                                </span>
+                                <span class="text-sm font-medium text-gray-900">{{ $emp->employee->name ?? 'N/A' }}</span>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-900">₹ {{ number_format($emp->total_amount, 2) }}</span>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500 text-center py-4">No data available</p>
+                    @endforelse
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -286,10 +333,6 @@ function formatDate(date) {
 }
 </script>
 
-{{-- Alpine.js for dropdown (include if not already in layout) --}}
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-{{-- Custom Pagination Styling --}}
 <style>
 .pagination {
     display: flex;

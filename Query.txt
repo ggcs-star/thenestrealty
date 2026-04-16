@@ -25,3 +25,15 @@ DROP COLUMN loan_stage;
 
 ALTER TABLE bookings
 MODIFY unit_size INT NULL;
+
+
+
+
+today
+
+
+==============
+
+ALTER TABLE loans 
+ADD COLUMN customer_id BIGINT AFTER employee_id;
+

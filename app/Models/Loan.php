@@ -30,7 +30,7 @@ class Loan extends Model
         return $this->belongsTo(\App\Models\LoanStage::class, 'loan_stage_id');
     }
     public function booking()
-{
-    return $this->belongsTo(\App\Models\Booking::class, 'booking_id', 'id');
-}
+    {
+        return $this->belongsTo(\App\Models\Booking::class, 'booking_id', 'id');
+    }
 }
