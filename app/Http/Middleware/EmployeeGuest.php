@@ -12,7 +12,7 @@ class EmployeeGuest
     {
         // Agar employee already logged in → dashboard redirect
         if (Auth::guard('employee')->check()) {
-            return redirect()->route('employee.dashboard');
+            return redirect()->route('dashboard');
         }
 
         // Admin login ho raha ho to bhi employee login page allow hoga

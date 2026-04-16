@@ -43,28 +43,66 @@
                         class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
                 </div>
 
-                <div class="md:col-span-2">
-                    @if(auth('employee')->check())
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                            <input type="hidden" name="assigned_employee" value="{{ auth('employee')->id() }}">
-                            <p class="text-sm text-gray-600">
-                                Assigned to:
-                                <span class="font-semibold text-gray-800">
-                                    {{ auth('employee')->user()->name }}
-                                </span>
-                            </p>
-                        </div>
-                    @else
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Assign Employee</label>
-                        <select name="assigned_employee"
-                            class="w-full h-11 border border-gray-300 rounded-lg px-4 focus:ring-2 focus:ring-[#AC7E2C]">
-                            <option value="" disabled selected>Select an employee</option>
-                            @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}">{{ $emp->name }}</option>
-                            @endforeach
-                        </select>
-                    @endif
-                </div>
+               <div class="md:col-span-2">
+
+    @if(auth('employee')->check())
+
+        @php
+            $user = auth('employee')->user();
+        @endphp
+
+        {{-- ✅ Manager --}}
+        @if($user->isManager())
+
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Assign Employee
+            </label>
+
+            <select name="assigned_employee"
+                class="w-full h-11 border border-gray-300 rounded-lg px-4">
+
+                <option value="" disabled selected>Select your employee</option>
+
+                @foreach($employees as $emp)
+                    <option value="{{ $emp->id }}">{{ $emp->name }}</option>
+                @endforeach
+
+            </select>
+
+        {{-- ✅ Normal Employee --}}
+        @else
+
+            <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                <input type="hidden" name="assigned_employee" value="{{ $user->id }}">
+                <p class="text-sm text-gray-600">
+                    Assigned to:
+                    <span class="font-semibold text-gray-800">
+                        {{ $user->name }}
+                    </span>
+                </p>
+            </div>
+
+        @endif
+
+    {{-- ✅ Admin --}}
+    @else
+
+        <label class="block text-sm font-medium text-gray-700 mb-1">Assign Employee</label>
+
+        <select name="assigned_employee"
+            class="w-full h-11 border border-gray-300 rounded-lg px-4">
+
+            <option value="" disabled selected>Select an employee</option>
+
+            @foreach($employees as $emp)
+                <option value="{{ $emp->id }}">{{ $emp->name }}</option>
+            @endforeach
+
+        </select>
+
+    @endif
+
+</div>
 
             </div>
 
