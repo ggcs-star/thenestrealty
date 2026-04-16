@@ -25,3 +25,21 @@ DROP COLUMN loan_stage;
 
 ALTER TABLE bookings
 MODIFY unit_size INT NULL;
+
+
+CREATE TABLE `documents` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    `name` VARCHAR(255) NOT NULL,
+
+    `template_html` LONGTEXT NOT NULL,
+
+    `type` VARCHAR(255) NULL,
+
+    `variables` JSON NULL,
+
+    `is_active` TINYINT(1) DEFAULT 1,
+
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL
+);
