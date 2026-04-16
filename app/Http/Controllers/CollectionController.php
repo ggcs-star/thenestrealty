@@ -16,50 +16,46 @@ use App\Models\Employee;
 
 class CollectionController extends Controller
 {
-  public function create(): View
-{
-    if (auth('employee')->check()) {
+    public function create(): View
+    {
+        if (auth('employee')->check()) {
 
-        $user = auth('employee')->user();
+            $user = auth('employee')->user();
 
-        if ($user->isManager()) {
+            if ($user->isManager()) {
 
-            $teamIds = Employee::where('manager_id', $user->id)
-                ->pluck('id')
-                ->push($user->id)
-                ->toArray();
+                $teamIds = Employee::where('manager_id', $user->id)
+                    ->pluck('id')
+                    ->push($user->id)
+                    ->toArray();
 
-            $customers = Customer::whereIn('employee_id', $teamIds)
-                ->select('id', 'name')
-                ->get();
+                $customers = Customer::whereIn('employee_id', $teamIds)
+                    ->select('id', 'name')
+                    ->get();
 
-            $BookingId = Booking::whereIn('employee_id', $teamIds)
-                ->select('id', 'booking_id')
-                ->get();
+                $BookingId = Booking::whereIn('employee_id', $teamIds)
+                    ->select('id', 'booking_id')
+                    ->get();
+            } else {
+
+                $employeeId = $user->id;
+
+                $customers = Customer::where('employee_id', $employeeId)
+                    ->select('id', 'name')
+                    ->get();
+
+                $BookingId = Booking::where('employee_id', $employeeId)
+                    ->select('id', 'booking_id')
+                    ->get();
+            }
+        } else {
+
+            $customers = Customer::select('id', 'name')->get();
+            $BookingId = Booking::select('id', 'booking_id')->get();
         }
 
-        else {
-
-            $employeeId = $user->id;
-
-            $customers = Customer::where('employee_id', $employeeId)
-                ->select('id', 'name')
-                ->get();
-
-            $BookingId = Booking::where('employee_id', $employeeId)
-                ->select('id', 'booking_id')
-                ->get();
-        }
+        return view('collections.create', compact('customers', 'BookingId'));
     }
-
-    else {
-
-        $customers = Customer::select('id', 'name')->get();
-        $BookingId = Booking::select('id', 'booking_id')->get();
-    }
-
-    return view('collections.create', compact('customers', 'BookingId'));
-}
 
 
     public function index(Request $request)
@@ -114,24 +110,24 @@ class CollectionController extends Controller
 
 
 
-//     public function listCollections(): View
+    //     public function listCollections(): View
 // {
 //     try {
 //         $query = Collection::with(['customer', 'booking']);
 
-//         // ✅ Check agar employee login hai
+    //         // ✅ Check agar employee login hai
 //         if (auth('employee')->check()) {
 //             $employeeId = auth('employee')->id();
 //             $query->where('employee_id', $employeeId);
 //         }
 
-//         $filter = strtolower(request('filter'));
+    //         $filter = strtolower(request('filter'));
 //         $from = request('from');
 //         $to = request('to');
 //         $specificDate = request('date');
 //         $today = now()->toDateString();
 
-//         switch ($filter) {
+    //         switch ($filter) {
 //             case 'today':
 //                 $query->whereDate('date', $today);
 //                 break;
@@ -147,11 +143,11 @@ class CollectionController extends Controller
 //                 break;
 //         }
 
-//         if ($specificDate) {
+    //         if ($specificDate) {
 //             $query->whereDate('date', $specificDate);
 //         }
 
-//         if ($from && $to) {
+    //         if ($from && $to) {
 //             $query->whereBetween('date', [$from, $to]);
 //         } elseif ($from) {
 //             $query->whereDate('date', '>=', $from);
@@ -159,102 +155,88 @@ class CollectionController extends Controller
 //             $query->whereDate('date', '<=', $to);
 //         }
 
-//         $collections = $query->orderBy('date', 'desc')->get();
+    //         $collections = $query->orderBy('date', 'desc')->get();
 
-//         return view('collections.list', compact('collections'));
+    //         return view('collections.list', compact('collections'));
 //     } catch (\Exception $e) {
 //         Log::error("Failed to fetch collections", [
 //             'error' => $e->getMessage()
 //         ]);
 
-//         return view('collections.list', ['collections' => collect()])
+    //         return view('collections.list', ['collections' => collect()])
 //             ->withErrors(['error' => 'Failed to load collections: ' . $e->getMessage()]);
 //     }
 // }
 
 
-public function listCollections(): View
-{
-    try {
-        $query = Collection::with(['customer', 'booking']);
+    public function listCollections(): View
+    {
+        try {
+            $query = Collection::with(['customer', 'booking']);
 
-        // ===============================
-        // 🔐 ROLE BASED FILTER
-        // ===============================
-        if (auth('employee')->check()) {
 
-            $user = auth('employee')->user();
+            if (auth('employee')->check()) {
 
-            // ✅ Manager → self + team
-            if ($user->isManager()) {
+                $user = auth('employee')->user();
 
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
+                if ($user->isManager()) {
 
-                $query->whereIn('employee_id', $teamIds);
+                    $teamIds = Employee::where('manager_id', $user->id)
+                        ->pluck('id')
+                        ->push($user->id)
+                        ->toArray();
+
+                    $query->whereIn('employee_id', $teamIds);
+                } else {
+                    $query->where('employee_id', $user->id);
+                }
             }
 
-            // ✅ Employee → only self
-            else {
-                $query->where('employee_id', $user->id);
+
+            $from = request('from');
+            $to = request('to');
+
+            if ($from && $to) {
+                $query->whereBetween('date', [$from, $to]);
+            } elseif ($from) {
+                $query->whereDate('date', '>=', $from);
+            } elseif ($to) {
+                $query->whereDate('date', '<=', $to);
             }
-        }
 
-        // ===============================
-        // 📅 DATE FILTER
-        // ===============================
-        $from = request('from');
-        $to = request('to');
 
-        if ($from && $to) {
-            $query->whereBetween('date', [$from, $to]);
-        } elseif ($from) {
-            $query->whereDate('date', '>=', $from);
-        } elseif ($to) {
-            $query->whereDate('date', '<=', $to);
-        }
+            if (request('status')) {
+                $query->where('status', request('status'));
+            }
 
-        // ===============================
-        // 🎯 STATUS
-        // ===============================
-        if (request('status')) {
-            $query->where('status', request('status'));
-        }
 
-        // ===============================
-        // 🔍 SEARCH
-        // ===============================
-        if (request('search')) {
-            $search = request('search');
+            if (request('search')) {
+                $search = request('search');
 
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('customer', function ($q2) use ($search) {
-                    $q2->where('name', 'like', "%$search%");
-                })->orWhereHas('booking', function ($q3) use ($search) {
-                    $q3->where('booking_id', 'like', "%$search%");
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('customer', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%$search%");
+                    })->orWhereHas('booking', function ($q3) use ($search) {
+                        $q3->where('booking_id', 'like', "%$search%");
+                    });
                 });
-            });
+            }
+
+
+            $collections = $query->orderBy('date', 'desc')->paginate(10);
+
+            return view('collections.list', compact('collections'));
+
+        } catch (\Exception $e) {
+
+            Log::error("Failed to fetch collections", [
+                'error' => $e->getMessage()
+            ]);
+
+            return view('collections.list', ['collections' => collect()])
+                ->withErrors(['error' => 'Failed to load collections']);
         }
-
-        // ===============================
-        // ✅ PAGINATION
-        // ===============================
-        $collections = $query->orderBy('date', 'desc')->paginate(10);
-
-        return view('collections.list', compact('collections'));
-
-    } catch (\Exception $e) {
-
-        Log::error("Failed to fetch collections", [
-            'error' => $e->getMessage()
-        ]);
-
-        return view('collections.list', ['collections' => collect()])
-            ->withErrors(['error' => 'Failed to load collections']);
     }
-}
     public function test()
     {
         try {
@@ -505,5 +487,102 @@ public function listCollections(): View
 
         return redirect()->route('collections.index')
             ->with('success', 'Collections status updated.');
+    }
+
+
+    public function collectionReport(Request $request)
+    {
+        $query = Collection::with([
+            'customer:id,name',
+            'booking:id,booking_id,total_amount'
+        ]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->whereHas(
+                    'customer',
+                    fn($subQ) =>
+                    $subQ->where('name', 'like', "%$search%")
+                )->orWhereHas(
+                        'booking',
+                        fn($subQ) =>
+                        $subQ->where('booking_id', 'like', "%$search%")
+                    );
+            });
+        }
+
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $query->whereBetween('date', [$request->from_date, $request->to_date]);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $statusCountsRaw = Collection::selectRaw('status, COUNT(*) as count')
+            ->whereIn('status', ['Completed', 'Pending'])
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $statusCounts = [
+            ['id' => 'Completed', 'name' => 'Completed', 'count' => $statusCountsRaw['Completed'] ?? 0],
+            ['id' => 'Pending', 'name' => 'Pending', 'count' => $statusCountsRaw['Pending'] ?? 0],
+        ];
+
+        $totalCollection = (clone $query)->sum('amount');
+        $totalDemand = Booking::sum('total_amount');
+        $overdueAmount = (clone $query)->where('status', 'overdue')->sum('amount');
+
+        $efficiency = $totalDemand > 0
+            ? round(($totalCollection / $totalDemand) * 100, 2)
+            : 0;
+
+        $monthlyRaw = Collection::selectRaw('MONTH(date) as month, SUM(amount) as total')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month');
+
+        $monthly = $monthlyRaw;
+        $monthNames = collect($monthlyRaw->keys())
+            ->map(fn($m) => date('M', mktime(0, 0, 0, $m, 1)))
+            ->values();
+
+        $modeSplitRaw = Collection::selectRaw('mode, SUM(amount) as total')
+            ->groupBy('mode')
+            ->pluck('total', 'mode');
+
+        $modeTotals = [
+            'Loan' => $modeSplitRaw['Loan'] ?? 0,
+            'Transfer' => $modeSplitRaw['Transfer'] ?? 0,
+            'Other' => $modeSplitRaw['Other'] ?? 0,
+        ];
+
+        $modeGrandTotal = array_sum($modeTotals);
+
+        $modePercentages = collect($modeTotals)->map(function ($val) use ($modeGrandTotal) {
+            return $modeGrandTotal > 0
+                ? round(($val / $modeGrandTotal) * 100)
+                : 0;
+        });
+
+        $collections = $query->latest()->paginate(10)->withQueryString();
+        $total = $collections->total();
+
+        return view('reports.collection_report', compact(
+            'collections',
+            'totalCollection',
+            'totalDemand',
+            'overdueAmount',
+            'efficiency',
+            'monthly',
+            'monthNames',
+            'statusCounts',
+            'total',
+            'modeTotals',
+            'modePercentages',
+            'modeGrandTotal'
+        ));
     }
 }

@@ -91,14 +91,14 @@
                 ['View Collection', route('collections.list')],
                 ],
                 ],
-        'Document System' => [
-    'id' => 'documentMenu',
-    'icon' => 'fa-file-alt',
-    'links' => [
-        ['Create Document', route('document.create')],
-        ['Template Builder', route('template.index')],
-    ],
-],
+                'Document System' => [
+                'id' => 'documentMenu',
+                'icon' => 'fa-file-alt',
+                'links' => [
+                    ['Create Document', route('document.create')],
+                    ['Template Builder', route('template.index')],
+                    ],
+                ],
                 'Employee Management' => [
                 'id' => 'employeeMenu',
                 'icon' => 'fa-user-tie',
@@ -114,6 +114,7 @@
                 'links' => [
                 ['Commission Report', route('report.commissions')],
                 ['Loan Report', route('loan.reports')],
+                ['Collection Report', route('collections.report')],
                 ],
                 ],
                 // 'System Settings' => [

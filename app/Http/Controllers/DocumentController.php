@@ -63,7 +63,7 @@ class DocumentController extends Controller
             : 'N/A',
 
         // 🔥 FIXED ₹ ISSUE
-'[[total_amount]]' => number_format($booking->total_amount ?? 0),
+'[[total_amount]]' => amountToPoints($booking->total_amount ?? 0),
         '[[project_name]]' => $booking->project->name ?? 'N/A',
 
         '[[date]]' => now()->format('d M Y'),

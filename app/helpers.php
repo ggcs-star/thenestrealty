@@ -13,11 +13,14 @@ if (!function_exists('getRupeePerPoint')) {
 }
 
 if (!function_exists('amountToPoints')) {
-    function amountToPoints(float $amount): float
+    function amountToPoints(?float $amount): float
     {
+        $amount = $amount ?? 0;
+
         $value = getRupeePerPoint();
-        if ($value <= 0)
+        if ($value <= 0) {
             return 0;
+        }
 
         return round($amount / $value, 5);
     }
