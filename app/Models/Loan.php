@@ -33,4 +33,10 @@ class Loan extends Model
     {
         return $this->belongsTo(\App\Models\Booking::class, 'booking_id', 'id');
     }
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
 }

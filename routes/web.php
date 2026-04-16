@@ -5,6 +5,7 @@ use App\Http\Controllers\ChannelPartnerController;
 use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
@@ -206,6 +207,10 @@ Route::middleware(['multi-auth:web,employee'])->group(function () {
     ->name('employee.loans');
     Route::get('/loan/{id}/edit', [LoanController::class, 'edit'])->name('loan.edit');
     Route::post('/loan/{id}/update', [LoanController::class, 'update'])->name('loan.update');
+
+    // Bank management routes (used by the "Add Bank" modal on the loan form)
+    Route::resource('banks', BankController::class)->only(['index', 'store', 'destroy']);
+
     Route::get('/create-collection', [CollectionController::class, 'create'])->name('create-collection');
     Route::get('/collections/list', [CollectionController::class, 'listCollections'])->name('collections.list');
     Route::post('/collections', [CollectionController::class, 'store'])->name('collections.store');

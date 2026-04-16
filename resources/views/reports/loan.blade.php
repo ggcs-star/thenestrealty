@@ -93,10 +93,10 @@
 
         <form method="GET" action="{{ route('loan.reports') }}">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <select name="bank_name" class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                <select name="bank_id" class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                     <option value="">All Banks</option>
                     @foreach($banksList as $bank)
-                        <option value="{{ $bank }}" {{ request('bank_name') == $bank ? 'selected' : '' }}>{{ $bank }}</option>
+                        <option value="{{ $bank->id }}" {{ request('bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
                     @endforeach
                 </select>
                 <select name="stage" class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -145,7 +145,7 @@
                                 <div class="text-xs text-gray-500">{{ $loan->booking->booking_id ?? 'No Booking ID' }}</div>
                             </td>
                             <td class="px-6 py-4 text-gray-700">{{ $loan->customer_name }}</td>
-                            <td class="px-6 py-4 text-gray-700">{{ $loan->bank_name ?? '-' }}</td>
+                            <td class="px-6 py-4 text-gray-700">{{ $loan->bank->name ?? '-' }}</td>
                             <td class="px-6 py-4 font-medium text-green-600">₹ {{ number_format($loan->loan_amount, 2) }}</td>
                             <td class="px-6 py-4">
                                 <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-100">
@@ -179,7 +179,7 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($projectWise as $data)
                         <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-medium text-gray-900">{{ $data->project_name }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-900">{{ $data->project_name ?? 'N/A' }}</td>
                             <td class="px-6 py-4 text-gray-700">{{ $data->total_cases }} Cases</td>
                             <td class="px-6 py-4 font-medium text-blue-600">₹ {{ number_format($data->total_amount, 2) }}</td>
                         </tr>
@@ -205,7 +205,7 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($bankWise as $data)
                         <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-medium text-gray-900">{{ $data->bank_name }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-900">{{ $data->bank_name ?? 'N/A' }}</td>
                             <td class="px-6 py-4 text-gray-700">{{ $data->total_cases }} Cases</td>
                             <td class="px-6 py-4 font-medium text-green-600">₹ {{ number_format($data->total_amount, 2) }}</td>
                         </tr>

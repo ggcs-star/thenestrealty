@@ -13,6 +13,8 @@ use App\Models\Customer;
 use App\Models\Booking;
 use App\Models\Employee;
 use App\Models\LoanStage;
+use App\Models\Bank;
+
 class LoanController extends Controller
 {
     public function index()
@@ -31,12 +33,14 @@ class LoanController extends Controller
 
         $loans = Loan::with(['employee', 'stage'])->latest()->get();
 
+        $banks = Bank::orderBy('name')->get();
         $stages = LoanStage::all();
 
         return view('loan.create', compact(
             'loans',
             'Booking',
             'customers',
+            'banks',
             'Emp',
             'stages'
         ));
@@ -51,7 +55,7 @@ class LoanController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'booking_id' => 'required|exists:bookings,id',
-            'bank_name' => 'nullable|string',
+            'bank_id' => 'nullable|exists:banks,id',
             'loan_amount' => 'required|numeric',
 
             'loan_stage_id' => 'required|exists:loan_stages,id',
@@ -81,8 +85,8 @@ class LoanController extends Controller
             'customer_name' => $customer->name ?? 'Unknown',
             'booking_id' => $booking->id,
             'unit_name' => $booking->unit_name ?? 'Default Display',
-            'bank_name' => $request->bank_name,
             'employee_id' => $employeeId,
+            'bank_id' => $request->bank_id,
             'employee_name' => $employeeName,
             'employee_number' => $employeeNumber,
             'loan_amount' => $request->loan_amount,
@@ -115,6 +119,7 @@ class LoanController extends Controller
 
     public function list(Request $request)
     {
+        // `loans` table uses `bank_name` (see migrations + view), so we don't eager-load `bank` relation here.
         $query = Loan::with(['employee', 'stage', 'booking']);
 
         if ($request->search) {
@@ -138,14 +143,16 @@ class LoanController extends Controller
     public function edit($id)
     {
         $loan = Loan::findOrFail($id);
-
+        
+        $banks = Bank::orderBy('name')->get();
         $customers = Customer::all();
         $Booking = Booking::all();
         $Emp = Employee::all();
         $stages = LoanStage::all();
-
+        
         return view('loan.edit', compact(
             'loan',
+            'banks',
             'customers',
             'Booking',
             'Emp',
@@ -159,7 +166,7 @@ class LoanController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'booking_id' => 'required|exists:bookings,id',
-            'bank_name' => 'nullable|string',
+            'bank_id' => 'nullable|exists:banks,id',
             'loan_amount' => 'required|numeric',
             'loan_stage_id' => 'required|exists:loan_stages,id',
             'notes' => 'nullable|string',
@@ -172,7 +179,7 @@ class LoanController extends Controller
             'customer_name' => $customer->name ?? 'Unknown',
             'booking_id' => $booking->id,
             'unit_name' => $booking->unit_name ?? 'Default Display',
-            'bank_name' => $request->bank_name,
+            'bank_id' => $request->bank_id,
             'loan_amount' => $request->loan_amount,
             'loan_stage_id' => $request->loan_stage_id,
             'notes' => $request->notes,
@@ -183,12 +190,14 @@ class LoanController extends Controller
     public function reports(Request $request)
     {
         $baseQuery = Loan::query()
-            ->with(['employee', 'stage', 'booking'])
+            ->with(['employee', 'stage', 'booking', 'bank'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->search;
                 $q->where(function ($subQ) use ($search) {
                     $subQ->where('customer_name', 'like', "%$search%")
-                        ->orWhere('bank_name', 'like', "%$search%")
+                        ->orWhereHas('bank', function ($bankQuery) use ($search) {
+                            $bankQuery->where('name', 'like', "%$search%");
+                        })
                         ->orWhere('unit_name', 'like', "%$search%");
                 });
             })
@@ -200,13 +209,16 @@ class LoanController extends Controller
                     $request->from_date . ' 00:00:00',
                     $request->to_date . ' 23:59:59'
                 ]);
+            })
+            ->when($request->filled('bank_id'), function ($q) use ($request) {
+                $q->where('bank_id', $request->bank_id);
             });
 
         // 1. Aggregated Data for the Tabs (Bank, Customer, Project)
         $bankWise = (clone $baseQuery)
-            ->selectRaw('bank_name, COUNT(*) as total_cases, SUM(loan_amount) as total_amount')
-            ->whereNotNull('bank_name')
-            ->groupBy('bank_name')
+            ->join('banks', 'loans.bank_id', '=', 'banks.id')
+            ->selectRaw('banks.name as bank_name, COUNT(loans.id) as total_cases, SUM(loans.loan_amount) as total_amount')
+            ->groupBy('banks.name')
             ->get();
 
         $customerWise = (clone $baseQuery)
@@ -234,7 +246,7 @@ class LoanController extends Controller
         })->count();
 
         // 3. Dropdown Options for Filters
-        $banksList = Loan::select('bank_name')->whereNotNull('bank_name')->distinct()->pluck('bank_name');
+        $banksList = Bank::orderBy('name')->get();
         $customersList = Loan::select('customer_name')->whereNotNull('customer_name')->distinct()->pluck('customer_name');
         $employeesList = \App\Models\Employee::all();
         $stagesList = \App\Models\LoanStage::all();
@@ -259,7 +271,7 @@ class LoanController extends Controller
     }
 public function employeeLoans(Request $request, $employeeId)
 {
-    $query = Loan::with(['employee', 'stage'])
+    $query = Loan::with(['employee', 'stage', 'bank'])
         ->where('employee_id', $employeeId)
 
         ->when($request->filled('search'), function ($q) use ($request) {
@@ -267,7 +279,9 @@ public function employeeLoans(Request $request, $employeeId)
 
             $q->where(function ($subQ) use ($search) {
                 $subQ->where('customer_name', 'like', "%$search%")
-                    ->orWhere('bank_name', 'like', "%$search%")
+                    ->orWhereHas('bank', function ($bankQuery) use ($search) {
+                        $bankQuery->where('name', 'like', "%$search%");
+                    })
                     ->orWhere('unit_name', 'like', "%$search%");
             });
         })

@@ -66,3 +66,16 @@ CREATE TABLE `documents` (
 
 
 ALTER TABLE customers DROP INDEX name;
+
+CREATE TABLE `banks` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL UNIQUE,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL
+);
+
+ALTER TABLE `loans`
+ADD COLUMN `bank_id` BIGINT UNSIGNED NULL AFTER `booking_id`,
+ADD CONSTRAINT `loans_bank_id_foreign`
+FOREIGN KEY (`bank_id`) REFERENCES `banks`(`id`)
+ON DELETE SET NULL;
