@@ -49,11 +49,13 @@ public function index(Request $request): View
         return view('empmanagement.assign-manager');
     }
     public function edit($id)
-    {
-        $employee = Employee::findOrFail($id);
+{
+    $employee = Employee::findOrFail($id);
 
-        return view('empmanagement.edit', compact('employee'));
-    }
+    $managers = Employee::where('designation', 'Manager')->get();
+
+    return view('empmanagement.edit', compact('employee', 'managers'));
+}
 
     public function store(Request $request): RedirectResponse
 {

@@ -19,48 +19,40 @@ class EmployeeAuthController extends Controller
 
     public function login(Request $request)
     {
-        // 1. Validate Inputs (More secure rules)
+        // dd($request->all());
         $credentials = $request->validate([
-            'email' => 'required|email:rfc,dns',
+            'email' => 'required|email:rfc',
             'password' => 'required|string|min:6|max:50',
         ]);
-
+// dd($credentials);
         $ipKey = Str::lower($request->email) . '|' . $request->ip();
 
-        // If too many attempts
         if (RateLimiter::tooManyAttempts($ipKey, 3)) {
 
-            $seconds = RateLimiter::availableIn($ipKey); // ⏳ WAIT TIME
+            $seconds = RateLimiter::availableIn($ipKey); 
 
             throw ValidationException::withMessages([
                 'email' => "Too many attempts. Try again in $seconds seconds.",
             ]);
         }
 
-        // Hit attempt counter
         RateLimiter::hit($ipKey, 60);
 
 
-        // 2. Fetch employee with limited columns (Faster DB query)
         $employee = Employee::select('id', 'email', 'password', 'status')
             ->where('email', $request->email)
             ->first();
 
-        // 3. Use constant-time password check to prevent timing attacks
         if (!$employee || !Hash::check($request->password, $employee->password)) {
 
-            // Fake delay to slow down brute force (optional but recommended)
-            usleep(300000); // 300ms delay
-
+            usleep(300000); 
             return back()->withErrors([
                 'email' => 'Invalid email or password.',
             ])->onlyInput('email');
         }
 
-        // 4. If employee exists but inactive
         if ($employee->status === 'inactive') {
 
-            // Invalidate session for safety
             $request->session()->invalidate();
 
             return back()->withErrors([
@@ -68,13 +60,10 @@ class EmployeeAuthController extends Controller
             ])->onlyInput('email');
         }
 
-        // 5. Login the employee guard securely
         Auth::guard('employee')->login($employee);
 
-        // 6. Regenerate session to prevent fixation attacks
         $request->session()->regenerate();
 
-        // 7. Redirect to dashboard
         return redirect()->intended(route('dashboard'));
     }
 

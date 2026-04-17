@@ -72,19 +72,45 @@
                 </div>
 
                 <!-- DESIGNATION -->
-                <div>
-                    <label class="text-sm text-gray-600">Designation</label>
-                    <select name="designation"
-                        class="mt-1 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#AC7E2C] @error('designation') border-red-500 @enderror">
+             <div>
+    <label class="text-sm text-gray-600">Designation</label>
+    <select name="designation" id="designation"
+        onchange="toggleManager()"
+        class="mt-1 w-full px-4 py-2.5 border border-gray-300 rounded-lg">
 
-                        <option value="Manager" {{ old('designation', $employee->designation) == 'Manager' ? 'selected' : '' }}>Manager</option>
-                        <option value="Employee" {{ old('designation', $employee->designation) == 'Employee' ? 'selected' : '' }}>Employee</option>
-                    </select>
+        <option value="Manager"
+            {{ old('designation', $employee->designation) == 'Manager' ? 'selected' : '' }}>
+            Manager
+        </option>
 
-                    @error('designation')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+        <option value="Employee"
+            {{ old('designation', $employee->designation) == 'Employee' ? 'selected' : '' }}>
+            Employee
+        </option>
+    </select>
+</div>
+
+<!-- ✅ Manager Dropdown -->
+<div id="managerField" style="display:none;">
+    <label class="text-sm text-gray-600">Assign Manager</label>
+
+    <select name="manager_id" id="manager_id"
+        class="mt-1 w-full px-4 py-2.5 border border-gray-300 rounded-lg">
+
+        <option value="">Select Manager</option>
+
+        @foreach($managers as $manager)
+            <option value="{{ $manager->id }}"
+                {{ old('manager_id', $employee->manager_id) == $manager->id ? 'selected' : '' }}>
+                {{ $manager->name }}
+            </option>
+        @endforeach
+    </select>
+    @error('manager_id')
+        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+        
+    @enderror
+</div>
 
                 <!-- STATUS -->
                 <div>
@@ -134,4 +160,22 @@
     </div>
 
 </section>
+
+<script>
+function toggleManager() {
+    let role = document.getElementById('designation').value;
+    let managerField = document.getElementById('managerField');
+    let managerInput = document.getElementById('manager_id');
+
+    if (role === 'Employee') {
+        managerField.style.display = 'block';
+    } else {
+        managerField.style.display = 'none';
+
+        managerInput.value = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', toggleManager);
+</script>
 @endsection
