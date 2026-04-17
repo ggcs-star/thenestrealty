@@ -6,8 +6,7 @@
 
 @section('content')
 
-    <div class="container mx-auto px-4 py-6">
-
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 pt-10 pb-6">
         {{-- Page Header --}}
         <div class="flex justify-between items-center mb-6">
             <div>
@@ -42,24 +41,40 @@
         </div>
 
         {{-- Summary Cards --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-gradient-to-br from-[#AA7F2A] to-[#8E6A22] rounded-xl shadow-lg text-white p-4">
-                <p class="text-amber-100 text-xs mb-1">Total Commission</p>
-                <h3 class="text-xl font-bold">₹ {{ amountToPoints($totalCommission) }}</h3>
-            </div>
-            <div class="bg-gradient-to-br from-[#C49A3F] to-[#AA7F2A] rounded-xl shadow-lg text-white p-4">
-                <p class="text-amber-100 text-xs mb-1">Partners</p>
-                <h3 class="text-xl font-bold">{{ $totalPartners }}</h3>
-            </div>
-            <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-xl shadow-lg text-white p-4">
-                <p class="text-green-100 text-xs mb-1">Paid</p>
-                <h3 class="text-xl font-bold">₹ {{ amountToPoints($paid) }}</h3>
-            </div>
-            <div class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl shadow-lg text-white p-4">
-                <p class="text-orange-100 text-xs mb-1">Pending</p>
-                <h3 class="text-xl font-bold">₹ {{ amountToPoints($pending) }}</h3>
-            </div>
-        </div>
+     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+
+    <!-- Total Commission -->
+<div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5 h-[90px] flex flex-col justify-between">        <p class="text-yellow-700 text-xs mb-1">Total Commission</p>
+        <h3 class="text-xl font-bold text-yellow-900">
+            ₹ {{ amountToPoints($totalCommission) }}
+        </h3>
+    </div>
+
+    <!-- Partners -->
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+        <p class="text-green-700 text-xs mb-1">Partners</p>
+        <h3 class="text-xl font-bold text-green-900">
+            {{ $totalPartners }}
+        </h3>
+    </div>
+
+    <!-- Paid -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <p class="text-blue-700 text-xs mb-1">Paid</p>
+        <h3 class="text-xl font-bold text-blue-900">
+            ₹ {{ amountToPoints($paid) }}
+        </h3>
+    </div>
+
+    <!-- Pending -->
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+        <p class="text-red-700 text-xs mb-1">Pending</p>
+        <h3 class="text-xl font-bold text-red-900">
+            ₹ {{ amountToPoints($pending) }}
+        </h3>
+    </div>
+
+</div>
 
         {{-- Filter Section --}}
         <div class="bg-white rounded-xl shadow-md mb-6 border border-gray-100">
