@@ -6,8 +6,7 @@
 
 @section('content')
     <div class="min-h-screen bg-gray-50">
-        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6">
-
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 pt-10 pb-6">
             {{-- KPI Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
                 {{-- Total Demand --}}

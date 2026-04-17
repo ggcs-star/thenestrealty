@@ -5,8 +5,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="flex-1 p-4 sm:p-6 min-h-screen bg-gray-50">
-
+<div class="flex-1 pt-10 pb-6 px-4 sm:px-6 min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -22,59 +21,73 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-        <!-- Total Loan Cases -->
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 relative">
-            <div class="text-sm font-medium text-gray-500 mb-2 flex justify-between items-center">
-                Total Loan Cases
-                <span class="p-1.5 bg-gray-50 rounded-md border border-gray-100"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></span>
-            </div>
-            <div class="text-3xl font-bold text-gray-900">{{ number_format($totalLoans) }}</div>
-            <div class="text-xs text-green-600 font-medium mt-2 flex items-center">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
-                Active Pipeline Volume
-            </div>
-        </div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
 
-        <!-- Open Pipeline -->
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 relative">
-            <div class="text-sm font-medium text-gray-500 mb-2 flex justify-between items-center">
-                Open Pipeline
-                <span class="p-1.5 bg-gray-50 rounded-md border border-gray-100"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></span>
-            </div>
-            <div class="text-3xl font-bold text-gray-900">₹ {{ number_format($totalAmount, 2) }}</div>
-            <div class="text-xs text-green-600 font-medium mt-2 flex items-center">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
-                Across active stages
-            </div>
+    <!-- Total Loan Cases -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="text-sm font-medium text-yellow-700 mb-2 flex justify-between items-center">
+            Total Loan Cases
+            <span class="p-1.5 bg-yellow-100 rounded-md border border-yellow-200">
+                <svg class="w-4 h-4 text-yellow-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+            </span>
         </div>
-
-        <!-- Dynamic Stages -->
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 relative">
-            <div class="text-sm font-medium text-gray-500 mb-2 flex justify-between items-center">
-                Dynamic Stages
-                <span class="p-1.5 bg-gray-50 rounded-md border border-gray-100"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></span>
-            </div>
-            <div class="text-3xl font-bold text-gray-900">{{ number_format($dynamicStages) }}</div>
-            <div class="text-xs text-yellow-600 font-medium mt-2 flex items-center">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                Custom per project / bank
-            </div>
-        </div>
-
-        <!-- Disbursed Cases -->
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 relative">
-            <div class="text-sm font-medium text-gray-500 mb-2 flex justify-between items-center">
-                Disbursed / Completed
-                <span class="p-1.5 bg-gray-50 rounded-md border border-gray-100"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></span>
-            </div>
-            <div class="text-3xl font-bold text-gray-900">{{ number_format($disbursedCases) }}</div>
-            <div class="text-xs text-green-600 font-medium mt-2 flex items-center">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Ready for export
-            </div>
+        <div class="text-3xl font-bold text-yellow-900">{{ number_format($totalLoans) }}</div>
+        <div class="text-xs text-green-600 font-medium mt-2 flex items-center">
+            ↑ Active Pipeline Volume
         </div>
     </div>
+
+    <!-- Open Pipeline -->
+    <div class="bg-green-50 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="text-sm font-medium text-green-700 mb-2 flex justify-between items-center">
+            Open Pipeline
+            <span class="p-1.5 bg-green-100 rounded-md border border-green-200">
+                <svg class="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                </svg>
+            </span>
+        </div>
+        <div class="text-3xl font-bold text-green-900">₹ {{ number_format($totalAmount, 2) }}</div>
+        <div class="text-xs text-green-600 font-medium mt-2 flex items-center">
+            ↑ Across active stages
+        </div>
+    </div>
+
+    <!-- Dynamic Stages -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="text-sm font-medium text-blue-700 mb-2 flex justify-between items-center">
+            Dynamic Stages
+            <span class="p-1.5 bg-blue-100 rounded-md border border-blue-200">
+                <svg class="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h4v4H4zM14 6h4v4h-4zM4 16h4v4H4zM14 16h4v4h-4z"/>
+                </svg>
+            </span>
+        </div>
+        <div class="text-3xl font-bold text-blue-900">{{ number_format($dynamicStages) }}</div>
+        <div class="text-xs text-yellow-600 font-medium mt-2 flex items-center">
+            Custom per project / bank
+        </div>
+    </div>
+
+    <!-- Disbursed -->
+    <div class="bg-red-50 border border-red-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="text-sm font-medium text-red-700 mb-2 flex justify-between items-center">
+            Disbursed / Completed
+            <span class="p-1.5 bg-red-100 rounded-md border border-red-200">
+                <svg class="w-4 h-4 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </span>
+        </div>
+        <div class="text-3xl font-bold text-red-900">{{ number_format($disbursedCases) }}</div>
+        <div class="text-xs text-green-600 font-medium mt-2 flex items-center">
+            Ready for export
+        </div>
+    </div>
+
+</div>
 
     <!-- Report Builder Filters & Toggles -->
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
@@ -83,12 +96,33 @@
                 <h2 class="text-lg font-bold text-gray-900">Report Builder</h2>
                 <p class="text-sm text-gray-500">Choose scope, filters, and display rules before generating the final loan report.</p>
             </div>
-            <div class="mt-4 md:mt-0 bg-gray-100 p-1 rounded-lg flex space-x-1">
-                <button onclick="switchTab('list')" id="btn-list" class="report-tab-btn bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium transition shadow-sm">Detailed List</button>
-                <button onclick="switchTab('project')" id="btn-project" class="report-tab-btn bg-transparent text-gray-600 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium transition">Project Wise</button>
-                <button onclick="switchTab('bank')" id="btn-bank" class="report-tab-btn bg-transparent text-gray-600 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium transition">Bank Wise</button>
-                <button onclick="switchTab('customer')" id="btn-customer" class="report-tab-btn bg-transparent text-gray-600 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium transition">Customer Wise</button>
-            </div>
+           <div class="mt-4 md:mt-0 bg-gray-100 p-1 rounded-lg flex space-x-1">
+
+    <button onclick="switchTab('list')" id="btn-list"
+        class="report-tab-btn px-4 py-2 rounded-md text-sm font-medium transition 
+        bg-[#AC7E2C] text-white shadow-sm hover:bg-[#94691F]">
+        Detailed List
+    </button>
+
+    <button onclick="switchTab('project')" id="btn-project"
+        class="report-tab-btn px-4 py-2 rounded-md text-sm font-medium transition 
+        bg-white text-gray-600 hover:bg-[#AC7E2C] hover:text-white border border-gray-200">
+        Project Wise
+    </button>
+
+    <button onclick="switchTab('bank')" id="btn-bank"
+        class="report-tab-btn px-4 py-2 rounded-md text-sm font-medium transition 
+        bg-white text-gray-600 hover:bg-[#AC7E2C] hover:text-white border border-gray-200">
+        Bank Wise
+    </button>
+
+    <button onclick="switchTab('customer')" id="btn-customer"
+        class="report-tab-btn px-4 py-2 rounded-md text-sm font-medium transition 
+        bg-white text-gray-600 hover:bg-[#AC7E2C] hover:text-white border border-gray-200">
+        Customer Wise
+    </button>
+
+</div>
         </div>
 
         <form method="GET" action="{{ route('loan.reports') }}">
@@ -110,8 +144,14 @@
             </div>
             <div class="flex justify-end space-x-2">
                 <a href="{{ route('loan.reports') }}" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Reset</a>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">Apply Filters</button>
-            </div>
+<button type="submit"
+    class="px-4 py-2 text-sm font-medium text-white 
+    bg-[#AC7E2C] rounded-lg 
+    hover:bg-[#94691F] 
+    active:bg-[#7A5418] 
+    transition-all duration-200 shadow-sm">
+    Apply Filters
+</button>            </div>
         </form>
     </div>
 
@@ -267,15 +307,16 @@
         document.getElementById('content-' + tabId).classList.add('block');
 
         // Reset all buttons
-        document.querySelectorAll('.report-tab-btn').forEach(btn => {
-            btn.classList.remove('bg-gray-900', 'text-white', 'shadow-sm');
-            btn.classList.add('bg-transparent', 'text-gray-600');
-        });
+      document.querySelectorAll('.report-tab-btn').forEach(btn => {
+    btn.classList.remove('bg-[#AC7E2C]', 'text-white', 'shadow-sm');
+    btn.classList.add('bg-white', 'text-gray-600', 'border', 'border-gray-200');
+});
 
         // Active styling for clicked button
-        const activeBtn = document.getElementById('btn-' + tabId);
-        activeBtn.classList.remove('bg-transparent', 'text-gray-600');
-        activeBtn.classList.add('bg-gray-900', 'text-white', 'shadow-sm');
+       
+const activeBtn = document.getElementById('btn-' + tabId);
+activeBtn.classList.remove('bg-white', 'text-gray-600', 'border', 'border-gray-200');
+activeBtn.classList.add('bg-[#AC7E2C]', 'text-white', 'shadow-sm');
     }
 </script>
 @endsection
