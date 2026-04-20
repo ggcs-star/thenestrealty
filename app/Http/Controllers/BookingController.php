@@ -23,10 +23,10 @@ class BookingController extends Controller
         $projects = collect();
         $channelPartners = collect();
 
-
         if (auth('employee')->check()) {
 
             $user = auth('employee')->user();
+
 
             if ($user->isManager()) {
 
@@ -34,17 +34,24 @@ class BookingController extends Controller
                     ->pluck('id')
                     ->push($user->id)
                     ->toArray();
+
             } else {
                 $teamIds = [$user->id];
             }
-
 
 
             $customers = Customer::whereIn('employee_id', $teamIds)->get();
 
             $projects = Project::whereIn('assigned_employee', $teamIds)->get();
 
-            $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
+
+            if ($user->isManager()) {
+
+                $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
+            } else {
+
+                $channelPartners = ChannelPartner::all();
+            }
         } else {
 
             $customers = Customer::all();
@@ -77,25 +84,20 @@ class BookingController extends Controller
 
         $validated['total_amount'] = $validated['invoice_amount'] + ($validated['other_amount'] ?? 0);
 
-        // Set employee_id if employee is logged in
         if (auth('employee')->check()) {
             $validated['employee_id'] = auth('employee')->id();
         }
 
-        // Get the project and check if the unit is available
         $project = Project::findOrFail($validated['project_id']);
 
-        // Extract unit number from unit_name (e.g., "A 101" -> "A101")
         $unitNumber = str_replace(' ', '', $validated['unit_name']);
 
         if (!$project->isUnitAvailable($unitNumber)) {
             return back()->withErrors(['unit_name' => 'This unit is already booked.'])->withInput();
         }
 
-        // Create the booking
         $booking = Booking::create($validated);
 
-        // Book the unit in the project
         $project->bookUnit($unitNumber);
 
         return redirect()->route('bookings.create')->with('success', 'Booking created successfully and unit marked as booked.');
@@ -112,7 +114,6 @@ class BookingController extends Controller
 
             $user = auth('employee')->user();
 
-            // ✅ Manager → self + team
             if ($user->isManager()) {
 
                 $teamIds = Employee::where('manager_id', $user->id)
@@ -125,10 +126,7 @@ class BookingController extends Controller
                 $projects = Project::whereIn('assigned_employee', $teamIds)->get();
 
                 $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
-            }
-
-            // ✅ Employee → only self
-            else {
+            } else {
 
                 $employeeId = $user->id;
 
@@ -136,12 +134,9 @@ class BookingController extends Controller
 
                 $projects = Project::where('assigned_employee', $employeeId)->get();
 
-                $channelPartners = ChannelPartner::where('employee_id', $employeeId)->get();
+                $channelPartners = ChannelPartner::all();
             }
-        }
-
-        // 👨‍💼 Admin → all
-        else {
+        } else {
 
             $customers = Customer::all();
             $projects = Project::all();
@@ -276,55 +271,55 @@ class BookingController extends Controller
         ));
     }
 
-  public function edit($id): View
-{
-    $booking = Booking::findOrFail($id);
+    public function edit($id): View
+    {
+        $booking = Booking::findOrFail($id);
 
-    $customers = collect();
-    $projects = collect();
-    $channelPartners = collect();
+        $customers = collect();
+        $projects = collect();
+        $channelPartners = collect();
+
+        if (auth('employee')->check()) {
+
+            $user = auth('employee')->user();
+
+            if ($user->isManager()) {
+
+                $teamIds = Employee::where('manager_id', $user->id)
+                    ->pluck('id')
+                    ->push($user->id)
+                    ->toArray();
+
+                $customers = Customer::whereIn('employee_id', $teamIds)->get();
+
+                $projects = Project::whereIn('assigned_employee', $teamIds)->get();
+
+                $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
+            } else {
+
+                $employeeId = $user->id;
+
+                $customers = Customer::where('employee_id', $employeeId)->get();
+
+                $projects = Project::where('assigned_employee', $employeeId)->get();
 
 
-    if (auth('employee')->check()) {
+                $channelPartners = ChannelPartner::all();
+            }
+        } else {
 
-        $user = auth('employee')->user();
-
-        if ($user->isManager()) {
-
-            $teamIds = Employee::where('manager_id', $user->id)
-                ->pluck('id')
-                ->push($user->id)
-                ->toArray();
+            $customers = Customer::all();
+            $projects = Project::all();
+            $channelPartners = ChannelPartner::all();
         }
 
-        else {
-            $teamIds = [$user->id];
-        }
-
-     
-
-        $customers = Customer::whereIn('employee_id', $teamIds)->get();
-
-        $projects = Project::whereIn('assigned_employee', $teamIds)->get();
-
-        $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
+        return view('booking.edit', compact(
+            'booking',
+            'customers',
+            'projects',
+            'channelPartners'
+        ));
     }
-
-   
-    else {
-
-        $customers = Customer::all();
-        $projects = Project::all();
-        $channelPartners = ChannelPartner::all();
-    }
-
-    return view('booking.edit', compact(
-        'booking',
-        'customers',
-        'projects',
-        'channelPartners'
-    ));
-}
 
     public function update(Request $request, $id): RedirectResponse
     {

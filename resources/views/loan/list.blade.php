@@ -51,7 +51,7 @@
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-600">
-                                        {{ $loan->booking->booking_id }}
+                                        {{ $loan->booking->booking_id ?? '-' }}
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-600">

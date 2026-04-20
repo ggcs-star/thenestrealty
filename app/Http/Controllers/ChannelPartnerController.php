@@ -42,53 +42,59 @@ class ChannelPartnerController extends Controller
     // return view('partner.list', compact('partners'));
     // }
 
-    public function list(Request $request): View
-    {
-        $query = ChannelPartner::query();
+ public function list(Request $request): View
+{
+    $query = ChannelPartner::query();
 
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('partner_name', 'like', '%' . $request->search . '%')
-                    ->orWhere('mail_id', 'like', '%' . $request->search . '%')
-                    ->orWhere('number_contact', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('from') && $request->filled('to')) {
-            $from = Carbon::parse($request->from)->startOfDay();
-            $to = Carbon::parse($request->to)->endOfDay();
-            $query->whereBetween('created_at', [$from, $to]);
-        } elseif ($request->filled('from')) {
-            $query->where('created_at', '>=', Carbon::parse($request->from)->startOfDay());
-        } elseif ($request->filled('to')) {
-            $query->where('created_at', '<=', Carbon::parse($request->to)->endOfDay());
-        }
-
-        if (auth('employee')->check()) {
-
-            $user = auth('employee')->user();
-
-            if ($user->isManager()) {
-
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
-
-                $query->whereIn('employee_id', $teamIds);
-            } else {
-                $query->where('employee_id', $user->id);
-            }
-        }
-
-        $partners = $query->latest()->paginate(10);
-
-        return view('partner.list', compact('partners'));
+   
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('partner_name', 'like', '%' . $request->search . '%')
+              ->orWhere('mail_id', 'like', '%' . $request->search . '%')
+              ->orWhere('number_contact', 'like', '%' . $request->search . '%');
+        });
     }
+
+ 
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('from') && $request->filled('to')) {
+        $from = Carbon::parse($request->from)->startOfDay();
+        $to = Carbon::parse($request->to)->endOfDay();
+        $query->whereBetween('created_at', [$from, $to]);
+    } elseif ($request->filled('from')) {
+        $query->where('created_at', '>=', Carbon::parse($request->from)->startOfDay());
+    } elseif ($request->filled('to')) {
+        $query->where('created_at', '<=', Carbon::parse($request->to)->endOfDay());
+    }
+
+   
+    if (auth('employee')->check()) {
+
+        $user = auth('employee')->user();
+
+       
+        if ($user->isManager()) {
+
+            $teamIds = Employee::where('manager_id', $user->id)
+                ->pluck('id')
+                ->push($user->id)
+                ->toArray();
+
+            $query->whereIn('employee_id', $teamIds);
+        }
+
+       
+    }
+
+  
+
+    $partners = $query->latest()->paginate(10);
+
+    return view('partner.list', compact('partners'));
+}
     /**
      * Show the form to create a new channel partner.
      */
