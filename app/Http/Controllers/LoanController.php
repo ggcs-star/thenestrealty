@@ -117,31 +117,50 @@ class LoanController extends Controller
     //     return view('loan.list', compact('loans'));
 // }
 
-    public function list(Request $request)
-    {
-        // `loans` table uses `bank_name` (see migrations + view), so we don't eager-load `bank` relation here.
-        $query = Loan::with(['employee', 'stage', 'booking', 'bank']);
+   public function list(Request $request)
+{
+    $query = Loan::with(['employee', 'stage', 'booking', 'bank']);
 
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('customer_name', 'like', '%' . $request->search . '%')
-                    ->orWhere('booking_id', 'like', '%' . $request->search . '%')
-                    ->orWhere('unit_name', 'like', '%' . $request->search . '%')
-                    ->orWhereHas('bank', function ($bankQuery) use ($request) {
-                        $bankQuery->where('name', 'like', '%' . $request->search . '%');
-                    });
-            });
+    if (auth('employee')->check()) {
+
+        $user = auth('employee')->user();
+
+        if ($user->isManager()) {
+
+            $teamIds = Employee::where('manager_id', $user->id)
+                ->pluck('id')
+                ->push($user->id)
+                ->toArray();
+
+            $query->whereIn('employee_id', $teamIds);
+
+        } else {
+
+            $query->where('employee_id', $user->id);
         }
-        if ($request->filled('stage')) {
-            $query->where('loan_stage_id', $request->stage);
-        }
-
-        $loans = $query->latest()->paginate(10);
-
-        $stages = \App\Models\LoanStage::all();
-
-        return view('loan.list', compact('loans', 'stages'));
     }
+
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('customer_name', 'like', '%' . $request->search . '%')
+                ->orWhere('booking_id', 'like', '%' . $request->search . '%')
+                ->orWhere('unit_name', 'like', '%' . $request->search . '%')
+                ->orWhereHas('bank', function ($bankQuery) use ($request) {
+                    $bankQuery->where('name', 'like', '%' . $request->search . '%');
+                });
+        });
+    }
+
+    if ($request->filled('stage')) {
+        $query->where('loan_stage_id', $request->stage);
+    }
+
+    $loans = $query->latest()->paginate(10);
+
+    $stages = \App\Models\LoanStage::all();
+
+    return view('loan.list', compact('loans', 'stages'));
+}
     public function edit($id)
     {
         $loan = Loan::findOrFail($id);
