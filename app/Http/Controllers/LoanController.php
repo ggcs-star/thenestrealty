@@ -20,16 +20,40 @@ class LoanController extends Controller
     public function index()
     {
         if (auth('employee')->check()) {
-            $employeeId = auth('employee')->id();
 
-            $customers = Customer::where('employee_id', $employeeId)->get();
-            $Booking = Booking::where('employee_id', $employeeId)->get();
-            $Emp = Employee::where('id', $employeeId)->get();
+            $user = auth('employee')->user();
+
+
+            if ($user->isManager()) {
+
+                $teamIds = Employee::where('manager_id', $user->id)
+                    ->pluck('id')
+                    ->push($user->id)
+                    ->toArray();
+
+                $customers = Customer::whereIn('employee_id', $teamIds)->get();
+
+                $Booking = Booking::whereIn('employee_id', $teamIds)->get();
+
+
+                $Emp = Employee::whereIn('id', $teamIds)->get();
+            } else {
+
+                $employeeId = $user->id;
+
+                $customers = Customer::where('employee_id', $employeeId)->get();
+
+                $Booking = Booking::where('employee_id', $employeeId)->get();
+
+                $Emp = Employee::where('id', $employeeId)->get();
+            }
         } else {
+
             $customers = Customer::all();
             $Booking = Booking::all();
             $Emp = Employee::all();
         }
+
 
         $loans = Loan::with(['employee', 'stage'])->latest()->get();
 
@@ -117,60 +141,60 @@ class LoanController extends Controller
     //     return view('loan.list', compact('loans'));
 // }
 
-   public function list(Request $request)
-{
-    $query = Loan::with(['employee', 'stage', 'booking', 'bank']);
+    public function list(Request $request)
+    {
+        $query = Loan::with(['employee', 'stage', 'booking', 'bank']);
 
-    if (auth('employee')->check()) {
+        if (auth('employee')->check()) {
 
-        $user = auth('employee')->user();
+            $user = auth('employee')->user();
 
-        if ($user->isManager()) {
+            if ($user->isManager()) {
 
-            $teamIds = Employee::where('manager_id', $user->id)
-                ->pluck('id')
-                ->push($user->id)
-                ->toArray();
+                $teamIds = Employee::where('manager_id', $user->id)
+                    ->pluck('id')
+                    ->push($user->id)
+                    ->toArray();
 
-            $query->whereIn('employee_id', $teamIds);
+                $query->whereIn('employee_id', $teamIds);
 
-        } else {
+            } else {
 
-            $query->where('employee_id', $user->id);
+                $query->where('employee_id', $user->id);
+            }
         }
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('customer_name', 'like', '%' . $request->search . '%')
+                    ->orWhere('booking_id', 'like', '%' . $request->search . '%')
+                    ->orWhere('unit_name', 'like', '%' . $request->search . '%')
+                    ->orWhereHas('bank', function ($bankQuery) use ($request) {
+                        $bankQuery->where('name', 'like', '%' . $request->search . '%');
+                    });
+            });
+        }
+
+        if ($request->filled('stage')) {
+            $query->where('loan_stage_id', $request->stage);
+        }
+
+        $loans = $query->latest()->paginate(10);
+
+        $stages = \App\Models\LoanStage::all();
+
+        return view('loan.list', compact('loans', 'stages'));
     }
-
-    if ($request->search) {
-        $query->where(function ($q) use ($request) {
-            $q->where('customer_name', 'like', '%' . $request->search . '%')
-                ->orWhere('booking_id', 'like', '%' . $request->search . '%')
-                ->orWhere('unit_name', 'like', '%' . $request->search . '%')
-                ->orWhereHas('bank', function ($bankQuery) use ($request) {
-                    $bankQuery->where('name', 'like', '%' . $request->search . '%');
-                });
-        });
-    }
-
-    if ($request->filled('stage')) {
-        $query->where('loan_stage_id', $request->stage);
-    }
-
-    $loans = $query->latest()->paginate(10);
-
-    $stages = \App\Models\LoanStage::all();
-
-    return view('loan.list', compact('loans', 'stages'));
-}
     public function edit($id)
     {
         $loan = Loan::findOrFail($id);
-        
+
         $banks = Bank::orderBy('name')->get();
         $customers = Customer::all();
         $Booking = Booking::all();
         $Emp = Employee::all();
         $stages = LoanStage::all();
-        
+
         return view('loan.edit', compact(
             'loan',
             'banks',
@@ -263,10 +287,10 @@ class LoanController extends Controller
         $dynamicStages = \App\Models\LoanStage::count();
 
         // Assuming stages with 'Disbursed' or 'Closed' or 'Completed' denote finished pipelines
-        $disbursedCases = (clone $baseQuery)->whereHas('stage', function($q) {
+        $disbursedCases = (clone $baseQuery)->whereHas('stage', function ($q) {
             $q->where('name', 'like', '%Disbursed%')
-              ->orWhere('name', 'like', '%Closed%')
-              ->orWhere('name', 'like', '%Completed%');
+                ->orWhere('name', 'like', '%Closed%')
+                ->orWhere('name', 'like', '%Completed%');
         })->count();
 
         // 3. Dropdown Options for Filters
@@ -293,40 +317,40 @@ class LoanController extends Controller
             'stagesList'
         ));
     }
-public function employeeLoans(Request $request, $employeeId)
-{
-    $query = Loan::with(['employee', 'stage', 'bank'])
-        ->where('employee_id', $employeeId)
+    public function employeeLoans(Request $request, $employeeId)
+    {
+        $query = Loan::with(['employee', 'stage', 'bank'])
+            ->where('employee_id', $employeeId)
 
-        ->when($request->filled('search'), function ($q) use ($request) {
-            $search = $request->search;
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $search = $request->search;
 
-            $q->where(function ($subQ) use ($search) {
-                $subQ->where('customer_name', 'like', "%$search%")
-                    ->orWhereHas('bank', function ($bankQuery) use ($search) {
-                        $bankQuery->where('name', 'like', "%$search%");
-                    })
-                    ->orWhere('unit_name', 'like', "%$search%");
+                $q->where(function ($subQ) use ($search) {
+                    $subQ->where('customer_name', 'like', "%$search%")
+                        ->orWhereHas('bank', function ($bankQuery) use ($search) {
+                            $bankQuery->where('name', 'like', "%$search%");
+                        })
+                        ->orWhere('unit_name', 'like', "%$search%");
+                });
+            })
+
+            ->when($request->filled('stage'), function ($q) use ($request) {
+                $q->where('loan_stage_id', $request->stage);
+            })
+
+            ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
+                $q->whereBetween('created_at', [
+                    $request->from_date . ' 00:00:00',
+                    $request->to_date . ' 23:59:59'
+                ]);
             });
-        })
 
-        ->when($request->filled('stage'), function ($q) use ($request) {
-            $q->where('loan_stage_id', $request->stage);
-        })
+        $loans = $query->latest()->paginate(10)->withQueryString();
 
-        ->when($request->filled(['from_date', 'to_date']), function ($q) use ($request) {
-            $q->whereBetween('created_at', [
-                $request->from_date . ' 00:00:00',
-                $request->to_date . ' 23:59:59'
-            ]);
-        });
+        $employee = Employee::find($employeeId);
 
-    $loans = $query->latest()->paginate(10)->withQueryString();
-
-    $employee = Employee::find($employeeId);
-
-    return view('reports.employee-loans', compact('loans', 'employee'));
-}
+        return view('reports.employee-loans', compact('loans', 'employee'));
+    }
     public function updateStage(Request $request, $id)
     {
         $request->validate([
