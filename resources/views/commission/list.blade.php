@@ -54,7 +54,7 @@
                                     </select>
                                 </form>
                             </td>
-                            <td class="px-3 py-2 border border-gray-200">{{ amountToPoints($commission->total_amount) }}</td>
+                            <td class="px-3 py-2 border border-gray-200">{{ amountToPoints($commission->amount) }}</td>
                             <td class="px-3 py-2 border border-gray-200">
                                 <div class="flex justify-center gap-2 flex-wrap">
                                     <a href="{{ route('commissions.show', $commission->id) }}" 

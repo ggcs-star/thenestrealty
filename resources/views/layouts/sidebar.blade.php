@@ -85,7 +85,7 @@
                 ],
                 'Collection System' => [
                 'id' => 'collectionMenu',
-                'icon' => 'fa-file-alt',
+                'icon' => 'fa-database',
                 'links' => [
                 ['Create Collection', route('create-collection')],
                 ['View Collection', route('collections.list')],
