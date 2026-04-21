@@ -72,36 +72,44 @@
                         </div>
                     </div>
 
-                    {{-- Sirf admin ke liye Employee select dikhana hai --}}
-                    @unless(auth('employee')->check())
-                        <!-- Employee Name -->
-                        <div>
-                            <label for="employee_name" class="block text-sm font-medium text-gray-700 mb-1">Employee
-                                Name</label>
-                            <select name="employee_name" id="employee_name"
-                                class="px-3 py-2 w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="">Select Employee Id</option>
-                                @foreach ($Emp as $ply)
-                                    <option value="{{ $ply->id }}">{{ $ply->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                   {{-- Admin OR Manager --}}
+@if(!auth('employee')->check() || auth('employee')->user()->isManager())
 
-                        <!-- Employee Number -->
-                        @if (!auth('employee')->check())
-                            <!-- Sirf admin ko show karega -->
-                            <div>
-                                <label for="employee_number" class="block text-sm font-medium text-gray-700 mb-1">Employee
-                                    Number</label>
-                                <input type="text" name="employee_number" id="employee_number" placeholder="Employee Number"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" />
-                            </div>
-                        @else
-                            <!-- Employee login hone par hidden field me phone_number bhej do -->
-                            <input type="hidden" name="employee_number" value="{{ auth('employee')->user()->phone_number }}">
-                        @endif
+    <!-- Employee Name -->
+    <div>
+        <label for="employee_name" class="block text-sm font-medium text-gray-700 mb-1">
+            Employee Name
+        </label>
 
-                    @endunless
+        <select name="employee_name" id="employee_name"
+            class="px-3 py-2 w-full border-gray-300 rounded-md shadow-sm">
+
+            <option value="">Select Employee</option>
+
+            @foreach ($Emp as $ply)
+                <option value="{{ $ply->id }}">{{ $ply->name }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <!-- Employee Number -->
+    <div>
+        <label for="employee_number" class="block text-sm font-medium text-gray-700 mb-1">
+            Employee Number
+        </label>
+
+        <input type="text" name="employee_number" id="employee_number"
+            placeholder="Employee Number"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" />
+    </div>
+
+@else
+
+    {{-- Employee login → hidden --}}
+    <input type="hidden" name="employee_name" value="{{ auth('employee')->id() }}">
+    <input type="hidden" name="employee_number" value="{{ auth('employee')->user()->phone_number }}">
+
+@endif
 
 
                     <!-- Loan Amount -->

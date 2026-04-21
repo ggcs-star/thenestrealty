@@ -17,50 +17,44 @@ class BookingController extends Controller
     /**
      * Show the create booking form (called when visiting /bookings/create).
      */
-    public function create(): View
-    {
-        $customers = collect();
-        $projects = collect();
-        $channelPartners = collect();
+   public function create(): View
+{
+    $customers = collect();
+    $projects = collect();
 
-        if (auth('employee')->check()) {
+    if (auth('employee')->check()) {
 
-            $user = auth('employee')->user();
+        $user = auth('employee')->user();
 
+        if ($user->isManager()) {
 
-            if ($user->isManager()) {
+            $teamIds = Employee::where('manager_id', $user->id)
+                ->pluck('id')
+                ->push($user->id)
+                ->toArray();
 
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
-
-            } else {
-                $teamIds = [$user->id];
-            }
-
-
-            $customers = Customer::whereIn('employee_id', $teamIds)->get();
-
-            $projects = Project::whereIn('assigned_employee', $teamIds)->get();
-
-
-            if ($user->isManager()) {
-
-                $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
-            } else {
-
-                $channelPartners = ChannelPartner::all();
-            }
         } else {
-
-            $customers = Customer::all();
-            $projects = Project::all();
-            $channelPartners = ChannelPartner::all();
+            $teamIds = [$user->id];
         }
 
-        return view('booking.create', compact('customers', 'projects', 'channelPartners'));
+       
+        $customers = Customer::whereIn('employee_id', $teamIds)->get();
+
+        $projects = Project::whereIn('assigned_employee', $teamIds)->get();
     }
+
+   
+    else {
+
+        $customers = Customer::all();
+        $projects = Project::all();
+    }
+
+
+    $channelPartners = ChannelPartner::all();
+
+    return view('booking.create', compact('customers', 'projects', 'channelPartners'));
+}
 
     /**
      * Handle the booking creation form submission.
@@ -109,47 +103,45 @@ class BookingController extends Controller
      * Redirects to create OR loads view with same data.
      */
     public function index(Request $request): View
-    {
-        if (auth('employee')->check()) {
+{
+    if (auth('employee')->check()) {
 
-            $user = auth('employee')->user();
+        $user = auth('employee')->user();
 
-            if ($user->isManager()) {
+        if ($user->isManager()) {
 
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
+            $teamIds = Employee::where('manager_id', $user->id)
+                ->pluck('id')
+                ->push($user->id)
+                ->toArray();
 
-                $customers = Customer::whereIn('employee_id', $teamIds)->get();
+            $customers = Customer::whereIn('employee_id', $teamIds)->get();
 
-                $projects = Project::whereIn('assigned_employee', $teamIds)->get();
-
-                $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
-            } else {
-
-                $employeeId = $user->id;
-
-                $customers = Customer::where('employee_id', $employeeId)->get();
-
-                $projects = Project::where('assigned_employee', $employeeId)->get();
-
-                $channelPartners = ChannelPartner::all();
-            }
+            $projects = Project::whereIn('assigned_employee', $teamIds)->get();
         } else {
 
-            $customers = Customer::all();
-            $projects = Project::all();
-            $channelPartners = ChannelPartner::all();
-        }
+            $employeeId = $user->id;
 
-        return view('booking.create', [
-            'user' => $request->user(),
-            'customers' => $customers,
-            'projects' => $projects,
-            'channelPartners' => $channelPartners,
-        ]);
+            $customers = Customer::where('employee_id', $employeeId)->get();
+
+            $projects = Project::where('assigned_employee', $employeeId)->get();
+        }
+    } else {
+
+        $customers = Customer::all();
+        $projects = Project::all();
     }
+
+   
+    $channelPartners = ChannelPartner::all();
+
+    return view('booking.create', [
+        'user' => $request->user(),
+        'customers' => $customers,
+        'projects' => $projects,
+        'channelPartners' => $channelPartners,
+    ]);
+}
 
 
     /**
@@ -271,55 +263,51 @@ class BookingController extends Controller
         ));
     }
 
-    public function edit($id): View
-    {
-        $booking = Booking::findOrFail($id);
+   public function edit($id): View
+{
+    $booking = Booking::findOrFail($id);
 
-        $customers = collect();
-        $projects = collect();
-        $channelPartners = collect();
+    $customers = collect();
+    $projects = collect();
 
-        if (auth('employee')->check()) {
+    if (auth('employee')->check()) {
 
-            $user = auth('employee')->user();
+        $user = auth('employee')->user();
 
-            if ($user->isManager()) {
+        if ($user->isManager()) {
 
-                $teamIds = Employee::where('manager_id', $user->id)
-                    ->pluck('id')
-                    ->push($user->id)
-                    ->toArray();
+            $teamIds = Employee::where('manager_id', $user->id)
+                ->pluck('id')
+                ->push($user->id)
+                ->toArray();
 
-                $customers = Customer::whereIn('employee_id', $teamIds)->get();
+            $customers = Customer::whereIn('employee_id', $teamIds)->get();
 
-                $projects = Project::whereIn('assigned_employee', $teamIds)->get();
-
-                $channelPartners = ChannelPartner::whereIn('employee_id', $teamIds)->get();
-            } else {
-
-                $employeeId = $user->id;
-
-                $customers = Customer::where('employee_id', $employeeId)->get();
-
-                $projects = Project::where('assigned_employee', $employeeId)->get();
-
-
-                $channelPartners = ChannelPartner::all();
-            }
+            $projects = Project::whereIn('assigned_employee', $teamIds)->get();
         } else {
 
-            $customers = Customer::all();
-            $projects = Project::all();
-            $channelPartners = ChannelPartner::all();
-        }
+            $employeeId = $user->id;
 
-        return view('booking.edit', compact(
-            'booking',
-            'customers',
-            'projects',
-            'channelPartners'
-        ));
+            $customers = Customer::where('employee_id', $employeeId)->get();
+
+            $projects = Project::where('assigned_employee', $employeeId)->get();
+        }
+    } else {
+
+        $customers = Customer::all();
+        $projects = Project::all();
     }
+
+    
+    $channelPartners = ChannelPartner::all();
+
+    return view('booking.edit', compact(
+        'booking',
+        'customers',
+        'projects',
+        'channelPartners'
+    ));
+}
 
     public function update(Request $request, $id): RedirectResponse
     {
