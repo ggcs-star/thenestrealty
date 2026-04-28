@@ -107,13 +107,68 @@
             </div>
 
             <!-- Upload -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Documents</label>
-                <input type="file" name="documents[]" multiple
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#AC7E2C]">
-                <p class="text-xs text-gray-500 mt-1">
-                    You can upload multiple Excel files (.xlsx, .xls) to extract units.
+            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+
+    <!-- Label -->
+    <div>
+        <label class="block text-sm font-semibold text-gray-800">
+            Upload Documents
+        </label>
+        <p class="text-xs text-gray-500 mt-1">
+            Upload one or more Excel files to import unit data.
+        </p>
+    </div>
+
+    <!-- File Input -->
+    <div class="flex items-center justify-center w-full">
+        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#AC7E2C] hover:bg-gray-50 transition">
+
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <!-- Icon -->
+                <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3 15a4 4 0 014-4h1m4 0h1a4 4 0 014 4m-9-4V5m0 0l-3 3m3-3l3 3" />
+                </svg>
+
+                <p class="text-sm text-gray-600">
+                    <span class="font-medium text-[#AC7E2C]">Click to upload</span> or drag & drop
                 </p>
+                <p class="text-xs text-gray-400 mt-1">
+                    Excel files only (.xlsx, .xls)
+                </p>
+            </div>
+
+            <input type="file" name="documents[]" multiple class="hidden">
+        </label>
+    </div>
+
+    <!-- Download Demo -->
+    <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+        <div>
+            <p class="text-sm font-medium text-gray-700">
+                Need a sample format?
+            </p>
+            <p class="text-xs text-gray-500">
+                Download the demo Excel file to understand structure.
+            </p>
+        </div>
+
+        <a href="{{ asset('demo.xlsx') }}"
+           class="inline-flex items-center gap-2 text-sm font-medium text-white bg-[#AC7E2C] px-4 py-2 rounded-lg hover:bg-[#94691f] transition shadow-sm">
+
+            <!-- Download Icon -->
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-5l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+
+            Download Demo
+        </a>
+    </div>
+
+</div>
             </div>
 
             <!-- Button -->
